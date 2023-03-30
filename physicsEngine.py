@@ -2,7 +2,7 @@ from objectClass import Object
 import time
 #let's make constants be global
 G = 6.67430 * (10 ** -11)
-littleG = 9.8
+littleG = 9.80665
 earthMass = 5.972 * 10**(24)
 earthRadius = 6378.1*10**3
 
@@ -17,28 +17,36 @@ box = Object("box", 1, earthRadius, 0, 0, 0)
 
 def testGravitation(): #fault tolerance for gravity function
     print("at earth's surface - low mass")
-    avgOffset = 0
+    avgForce = 0
+    avgAcceleration = 0
     t1 = time.time()
     for i in range(1, 1000):
         gravity = gravitation(box, earth)
-        avgOffset += abs(gravity - littleG*i)
+        avgForce += abs(gravity - littleG*box.mass)
+        avgAcceleration += abs(gravity - littleG*box.mass) / box.mass
         box.mass += 1
     t2 = time.time()
     print(f"ran in {t2-t1} seconds")
-    avgOffset /= 999
-    print(f"average offset of {avgOffset} N")
+    avgForce /= 999
+    print(f"average offset of {avgForce} N")
+    avgAcceleration /= 999
+    print(f'average Acceleration offset of {avgAcceleration}')
     box.mass = 0
     print("testing at earth's surface, high mass")
-    avgOffset = 0
+    avgForce = 0
+    avgAcceleration
     t1 = time.time()
     for i in range(1, 1000):
         box.mass += 50
         gravity = gravitation(box, earth)
-        avgOffset += abs(gravity - littleG*50*i)
+        avgForce += abs(gravity - littleG*box.mass)
+        avgAcceleration += abs(gravity - littleG*box.mass) / box.mass
     t2 = time.time()
     print(f"ran in {t2-t1} seconds")
-    avgOffset /= 999
-    print(f'avg offset of {avgOffset} N')
+    avgForce /= 999
+    print(f'avg offset of {avgForce} N')
+    avgAcceleration /= 999
+    print(f'average Acceleration offset of {avgAcceleration}')
     
 testGravitation()
     
