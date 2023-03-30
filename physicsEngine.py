@@ -7,7 +7,7 @@ earthMass = 5.972 * 10**(24)
 earthRadius = 6378.1*10**3
 
 def almostEqual(x, y):
-    return abs(x-y) < 0.2
+    return abs(x-y) < 0.1
 
 def gravitation(object1, object2):
     return (G*object1.mass*object2.mass) / (object1.distance(object2)**2)
@@ -32,6 +32,7 @@ def testGravitation(): #fault tolerance for gravity function
     avgAcceleration /= 999
     print(f'average Acceleration offset of {avgAcceleration}')
     box.mass = 0
+    print('---------------')
     print("testing at earth's surface, high mass")
     avgForce = 0
     avgAcceleration
@@ -46,7 +47,7 @@ def testGravitation(): #fault tolerance for gravity function
     avgForce /= 999
     print(f'avg offset of {avgForce} N')
     avgAcceleration /= 999
-    print(f'average Acceleration offset of {avgAcceleration}')
+    print(f'average Acceleration offset of {avgAcceleration} m/s^2')
     
 testGravitation()
     

@@ -1,5 +1,6 @@
 #alright so we should use OOP to base the movement of different objects, we can then make 
 #subclasses like rockets and planets
+import math
 
 class Object:
     def __init__(self, name, mass, cx, cy, vx, vy):
@@ -28,3 +29,9 @@ class Object:
         if isinstance(other, Object):
             return ((self.cx - other.cx)**2 + (self.cy - other.cy)**2)**0.5
         return None
+    
+    def angleBetween(self, other):
+        if isinstance(other, Object):
+            if self.cx == other.cx:
+                return math.pi/2
+            return math.atan((other.cy-self.cy) / (other.cx-self.cx))
