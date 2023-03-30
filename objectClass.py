@@ -2,12 +2,13 @@
 #subclasses like rockets and planets
 
 class Object:
-    def __init__(self, name, mass, cx, cy, velocity):
-        self.name = name#include name for the hash function, everything else will change 
+    def __init__(self, name, mass, cx, cy, vx, vy):
+        self.name = name #include name for the hash function, everything else will change 
         self.mass = mass
         self.cx = cx
         self.cy = cy
-        self.velocity = velocity
+        self.vx = vx
+        self.vy = vy
     
     def __repr__(self):
         return f'Object named {self.name}'
@@ -24,6 +25,6 @@ class Object:
         return f'{self.name} is at coordinates(x={self.cx}, y={self.cy})'
     
     def distance(self, other):
-        if isinstance(Object, other):
+        if isinstance(other, Object):
             return ((self.cx - other.cx)**2 + (self.cy - other.cy)**2)**0.5
         return None
