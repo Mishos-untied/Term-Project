@@ -27,6 +27,7 @@ items = [earth, box]
 forceFunctions = [gravitation]
 # apparently you can store functions in list, so these abuse this fact to sum the forces in the x and y
 # directions. Only caveat is the the function has to be defined in a line above the list
+
 def findXForces(o): 
     total = 0
     for fun in forceFunctions:
@@ -49,4 +50,17 @@ def findYForces(o):
 ############
 ###Motion###
 ############
+
+def updateXPos(ob):
+    acceleration = findXForces(ob) / ob.mass
+    ob.cx = ob.vx + 0.5 * acceleration
+
+def updateYPos(ob):
+    acceleration = findYForces(ob) / ob.mass
+    ob.cy = ob.vy + 0.5 * acceleration
+
+def updateObject(ob):
+    updateXPos(ob)
+    updateYPos(ob)
+
 
