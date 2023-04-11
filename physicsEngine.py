@@ -10,7 +10,6 @@ def restartSim(app):
     app.drawTrails = False
     app.tracerStep = 5
     app.G = 1
-    
     sunRadius = 10
     sunMass = 100000
     planet1Radius = 4
@@ -19,7 +18,7 @@ def restartSim(app):
     planet2Mass = 10
     planet3Radius = 3
     planet3Mass = 15
-    
+    app.scaling = app.width
     app.dt = 0.01
     app.trailCutoffConstant = 5
     app.cameraMoveStep = 5
@@ -33,17 +32,18 @@ def restartSim(app):
 
 def redrawAll(app):
     drawRect(0,0,app.width,app.height)
+    scale = app.width / app.scaling
     for cBody in Body.instances:
         if isinstance(cBody, Rocket):
-            x1 = cBody.position.x + 10
+            x1 = cBody.position.x + 10*scale
             y1 = cBody.position.y
-            x2 = x3 = cBody.position.x - 5
-            y2 = y1 - 5
-            y3 = y1 + 5
+            x2 = x3 = cBody.position.x - 5*scale
+            y2 = y1 - 5*scale
+            y3 = y1 + 5*scale
             angle = cBody.angle * (180 / math.pi)
             drawPolygon(x1, y1, x2, y2, x3, y3, fill='white', rotateAngle=angle)
         else:
-            drawCircle(cBody.position.x, cBody.position.y, cBody.radius, fill = cBody.color)
+            drawCircle(cBody.position.x, cBody.position.y, cBody.radius*scale, fill = cBody.color)
 
         if app.drawTrails == True:
             for i in range(1,len(cBody.previousPositions), app.tracerStep):
@@ -69,6 +69,10 @@ def onKeyPress(app, key):
 
 
 def onKeyHold(app, keys):
+    if 'm' in keys and app.scaling < app.width:
+        app.scaling += 5
+    if 'n' in keys and app.scaling > 10:
+        app.scaling -= 5
     if ('w' in keys) and ('s' not in keys):
         for cBody in Body.instances:
             cBody.position.y += app.cameraMoveStep
