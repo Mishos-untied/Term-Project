@@ -33,10 +33,6 @@ def restartSim(app):
 
 def redrawAll(app):
     drawRect(0,0,app.width,app.height)
-    drawRect(350, 25, 25, 50, border='white', fill=None)
-    thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
-    if thrustHeight > 0:
-        drawRect(350, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
     for cBody in Body.instances:
         if isinstance(cBody, Rocket):
             x1 = cBody.position.x + 10
@@ -58,7 +54,10 @@ def redrawAll(app):
                 x2 = pos2.x
                 y2 = pos2.y
                 drawLine(x1, y1, x2, y2, fill = 'white')
-    
+    drawRect(350, 25, 25, 50, border='white', fill=None)
+    thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
+    if thrustHeight > 0:
+        drawRect(350, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
     
 def onKeyPress(app, key):
     if key == 'p':
