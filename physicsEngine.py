@@ -1,5 +1,5 @@
 from cmu_graphics import *
-from Classes import Vector as vector, Body as body, Rocket as rocket
+from Classes import Vector, Body, Rocket
 import math
 
 def onAppStart(app):
@@ -21,22 +21,21 @@ def restartSim(app):
     planet3Mass = 15
     
     app.dt = 0.01
-    
-    app.trailCutoffConstant = 10
+    app.trailCutoffConstant = 5
     app.cameraMoveStep = 5
-    
-    app.sun1 = body(position=vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=vector(0,0), color='blue')
-    app.planet1 = body(position=vector(app.width//2,60), radius=planet1Radius, mass=planet1Mass, velocity=vector(15,0), color='red')
-    app.planet2 = body(position=vector(app.width//2,100), radius=planet2Radius, mass=planet2Mass, velocity=vector(-18,0), color='green')
-    app.planet3 = body(position=vector(app.width//2,150), radius=planet3Radius, mass=planet3Mass, velocity=vector(25,0), color='orange')
-    app.rocket = rocket(position=vector(app.width//2, 300), radius=4, mass=10, velocity=vector(0,0),color='pink')
+    app.sun1 = Body(position=Vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=Vector(0,0), color='gold')
+    #app.sun2 = Body(position=Vector(app.width//2+100, app.height//2), radius=sunRadius, mass=sunMass, velocity = Vector(0,20), color='gold')
+    #app.planet1 = Body(position=Vector(app.width//2,60), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red')
+    #app.planet2 = Body(position=Vector(app.width//2,100), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green')
+    #app.planet3 = Body(position=Vector(app.width//2,150), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange')
+    app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey')
 
-   
+
 def redrawAll(app):
     drawRect(0,0,app.width,app.height)
     
-    for cBody in body.instances:
-        if isinstance(cBody, rocket):
+    for cBody in Body.instances:
+        if isinstance(cBody, Rocket):
             x1 = cBody.position.x + 10
             y1 = cBody.position.y
             x2 = x3 = cBody.position.x - 5
@@ -69,22 +68,22 @@ def onKeyPress(app, key):
 
 def onKeyHold(app, keys):
     if ('w' in keys) and ('s' not in keys):
-        for cBody in body.instances:
+        for cBody in Body.instances:
             cBody.position.y += app.cameraMoveStep
             for prevPosition in cBody.previousPositions:
                 prevPosition.y += app.cameraMoveStep
     if ('s' in keys) and ('w' not in keys):
-        for cBody in body.instances:
+        for cBody in Body.instances:
             cBody.position.y -= app.cameraMoveStep
             for prevPosition in cBody.previousPositions:
                 prevPosition.y -= app.cameraMoveStep
     if ('a' in keys) and ('d' not in keys):
-        for cBody in body.instances:
+        for cBody in Body.instances:
             cBody.position.x += app.cameraMoveStep
             for prevPosition in cBody.previousPositions:
                 prevPosition.x += app.cameraMoveStep
     if ('d' in keys) and ('a' not in keys):
-        for cBody in body.instances:
+        for cBody in Body.instances:
             cBody.position.x -= app.cameraMoveStep
             for prevPosition in cBody.previousPositions:
                 prevPosition.x -= app.cameraMoveStep
@@ -102,19 +101,19 @@ def onKeyHold(app, keys):
         app.rocket.updateDirection()
         
 def takeStep(app):
-    for i in range(len(body.instances)):
-        for j in range(i+1,len(body.instances)):
-            cBod1 = body.instances[i]
-            cBod2 = body.instances[j]
+    for i in range(len(Body.instances)):
+        for j in range(i+1,len(Body.instances)):
+            cBod1 = Body.instances[i]
+            cBod2 = Body.instances[j]
             
             r = cBod2.position - cBod1.position
             
             if r.mag > (cBod1.radius + cBod2.radius):
                 Fg = r*(-app.G*cBod1.mass*cBod2.mass) / (r.mag**3)
-                if isinstance(cBod2, rocket):
+                if isinstance(cBod2, Rocket):
                     Ft = cBod2.thrustVector
                 else:
-                    Ft = vector(0, 0)
+                    Ft = Vector(0, 0)
                 Fnet = Ft + Fg
 
                 cBod1.momentum = cBod1.momentum - Fnet*app.dt

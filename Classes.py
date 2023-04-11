@@ -45,7 +45,7 @@ class Body:
             Body.instances.append(self)
 
 class Rocket(Body):
-    maxThrust = 5
+    maxThrust = 200
     def __init__(self, position, radius, mass, velocity, color, angle=0):
         self.rocketAngle = angle
         super().__init__(position, radius, mass, velocity, color)
@@ -54,13 +54,19 @@ class Rocket(Body):
         self.thrustMagnitude = 0
         if 0 <= self.thrustMagnitude <= Rocket.maxThrust:
             self.thrustMagnitude = self.thrustMagnitude
-        elif self.thrust.thrustMagnitude > Rocket.maxThrust:
+        elif self.thrustMagnitude > Rocket.maxThrust:
             self.thrustMagnitude = Rocket.maxThrust
         elif self.thrustMagnitude < 0:
             self.thrustMagnitude = 0
         self.thrustVector = self.directionVector * self.thrustMagnitude
     
     def updateThrust(self):
+        if 0 <= self.thrustMagnitude <= Rocket.maxThrust:
+            self.thrustMagnitude = self.thrustMagnitude
+        elif self.thrustMagnitude > Rocket.maxThrust:
+            self.thrustMagnitude = Rocket.maxThrust
+        elif self.thrustMagnitude < 0:
+            self.thrustMagnitude = 0
         self.thrustVector = self.directionVector * self.thrustMagnitude
     
     def updateDirection(self):
