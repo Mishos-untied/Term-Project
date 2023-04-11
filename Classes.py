@@ -1,3 +1,5 @@
+import math
+
 class Vector:
         def __init__(self, x, y):
             self.x = x
@@ -43,9 +45,27 @@ class Body:
             Body.instances.append(self)
 
 class Rocket(Body):
-    maxThrust = 100
-    def __init__(self, position, radius, mass, velocity, color, thrust, angle=0):
+    maxThrust = 5
+    def __init__(self, position, radius, mass, velocity, color, angle=0):
         self.rocketAngle = angle
         super().__init__(position, radius, mass, velocity, color)
-        self.thrust = thrust if thrust.mag < Rocket.maxThrust else Rocket.maxThrust
+        self.angle = 0
+        self.directionVector = Vector(math.cos(self.angle), math.sin(self.angle))
+        self.thrustMagnitude = 0
+        if 0 <= self.thrustMagnitude <= Rocket.maxThrust:
+            self.thrustMagnitude = self.thrustMagnitude
+        elif self.thrust.thrustMagnitude > Rocket.maxThrust:
+            self.thrustMagnitude = Rocket.maxThrust
+        elif self.thrustMagnitude < 0:
+            self.thrustMagnitude = 0
+        self.thrustVector = self.directionVector * self.thrustMagnitude
+    
+    def updateThrust(self):
+        self.thrustVector = self.directionVector * self.thrustMagnitude
+    
+    def updateDirection(self):
+        self.directionVector = Vector(math.cos(self.angle), math.sin(self.angle)) 
+
+        
+
     

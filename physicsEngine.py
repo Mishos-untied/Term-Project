@@ -1,6 +1,6 @@
 from cmu_graphics import *
 from Classes import Vector as vector, Body as body, Rocket as rocket
-
+import math
 
 def onAppStart(app):
     restartSim(app)
@@ -26,17 +26,27 @@ def restartSim(app):
     app.cameraMoveStep = 5
     
     app.sun1 = body(position=vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=vector(0,0), color='blue')
-    # app.planet1 = body(position=vector(app.width//2,60), radius=planet1Radius, mass=planet1Mass, velocity=vector(15,0), color='red')
-    # app.planet2 = body(position=vector(app.width//2,100), radius=planet2Radius, mass=planet2Mass, velocity=vector(-18,0), color='green')
-    # app.planet3 = body(position=vector(app.width//2,150), radius=planet3Radius, mass=planet3Mass, velocity=vector(25,0), color='orange')
-    app.rocket = rocket(position=vector(app.width//2, 250), radius=4, mass=1, velocity=vector(0,0),color='pink', thrust=vector(50, -50))
+    app.planet1 = body(position=vector(app.width//2,60), radius=planet1Radius, mass=planet1Mass, velocity=vector(15,0), color='red')
+    app.planet2 = body(position=vector(app.width//2,100), radius=planet2Radius, mass=planet2Mass, velocity=vector(-18,0), color='green')
+    app.planet3 = body(position=vector(app.width//2,150), radius=planet3Radius, mass=planet3Mass, velocity=vector(25,0), color='orange')
+    app.rocket = rocket(position=vector(app.width//2, 300), radius=4, mass=10, velocity=vector(0,0),color='pink')
 
    
 def redrawAll(app):
     drawRect(0,0,app.width,app.height)
     
     for cBody in body.instances:
-        drawCircle(cBody.position.x, cBody.position.y, cBody.radius, fill = cBody.color)
+        if isinstance(cBody, rocket):
+            x1 = cBody.position.x + 10
+            y1 = cBody.position.y
+            x2 = x3 = cBody.position.x - 5
+            y2 = y1 - 5
+            y3 = y1 + 5
+            angle = cBody.angle * (180 / math.pi)
+            drawPolygon(x1, y1, x2, y2, x3, y3, fill='white', rotateAngle=angle)
+        else:
+            drawCircle(cBody.position.x, cBody.position.y, cBody.radius, fill = cBody.color)
+
         if app.drawTrails == True:
             for i in range(1,len(cBody.previousPositions), app.tracerStep):
                 pos1 = cBody.previousPositions[i-1]
@@ -60,14 +70,14 @@ def onKeyPress(app, key):
 def onKeyHold(app, keys):
     if ('w' in keys) and ('s' not in keys):
         for cBody in body.instances:
-            cBody.position.y -= app.cameraMoveStep
-            for prevPosition in cBody.previousPositions:
-                prevPosition.y -= app.cameraMoveStep
-    if ('s' in keys) and ('w' not in keys):
-        for cBody in body.instances:
             cBody.position.y += app.cameraMoveStep
             for prevPosition in cBody.previousPositions:
                 prevPosition.y += app.cameraMoveStep
+    if ('s' in keys) and ('w' not in keys):
+        for cBody in body.instances:
+            cBody.position.y -= app.cameraMoveStep
+            for prevPosition in cBody.previousPositions:
+                prevPosition.y -= app.cameraMoveStep
     if ('a' in keys) and ('d' not in keys):
         for cBody in body.instances:
             cBody.position.x += app.cameraMoveStep
@@ -78,7 +88,19 @@ def onKeyHold(app, keys):
             cBody.position.x -= app.cameraMoveStep
             for prevPosition in cBody.previousPositions:
                 prevPosition.x -= app.cameraMoveStep
-
+    if 'up' in keys and 'down' not in keys:
+        app.rocket.thrustMagnitude += 3
+        app.rocket.updateThrust()
+    if 'down' in keys and 'up' not in keys:
+        app.rocket.thrustMagnitude -= 3
+        app.rocket.updateThrust()
+    if 'left' in keys and 'right' not in keys:
+        app.rocket.angle -= math.pi / 60
+        app.rocket.updateDirection()
+    if 'right' in keys and 'left' not in keys:
+        app.rocket.angle += math.pi / 60
+        app.rocket.updateDirection()
+        
 def takeStep(app):
     for i in range(len(body.instances)):
         for j in range(i+1,len(body.instances)):
@@ -90,7 +112,7 @@ def takeStep(app):
             if r.mag > (cBod1.radius + cBod2.radius):
                 Fg = r*(-app.G*cBod1.mass*cBod2.mass) / (r.mag**3)
                 if isinstance(cBod2, rocket):
-                    Ft = cBod2.thrust
+                    Ft = cBod2.thrustVector
                 else:
                     Ft = vector(0, 0)
                 Fnet = Ft + Fg
