@@ -33,7 +33,10 @@ def restartSim(app):
 
 def redrawAll(app):
     drawRect(0,0,app.width,app.height)
-    
+    drawRect(350, 25, 25, 50, border='white', fill=None)
+    thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
+    if thrustHeight > 0:
+        drawRect(350, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
     for cBody in Body.instances:
         if isinstance(cBody, Rocket):
             x1 = cBody.position.x + 10
@@ -89,16 +92,15 @@ def onKeyHold(app, keys):
                 prevPosition.x -= app.cameraMoveStep
     if 'up' in keys and 'down' not in keys:
         app.rocket.thrustMagnitude += 3
-        app.rocket.updateThrust()
     if 'down' in keys and 'up' not in keys:
         app.rocket.thrustMagnitude -= 3
-        app.rocket.updateThrust()
     if 'left' in keys and 'right' not in keys:
         app.rocket.angle -= math.pi / 60
         app.rocket.updateDirection()
     if 'right' in keys and 'left' not in keys:
         app.rocket.angle += math.pi / 60
         app.rocket.updateDirection()
+    app.rocket.updateThrust()
         
 def takeStep(app):
     for i in range(len(Body.instances)):
