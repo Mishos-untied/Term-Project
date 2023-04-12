@@ -3,17 +3,22 @@ from Classes import Vector, Body, Rocket
 import math
 
 def onAppStart(app):
-    app.showLoadingScreen = False
+    app.showLoadingScreen = True
     restartSim(app)
-    if not app.showLoadingScreen:
-        setupGame(app)
+    loadingScreenSim(app)
+
+def loadingScreenSim(app):
+    sunMass = 100000
+    sunRadius = 10
+    app.sun1 = Body(Vector(300, 300), sunRadius, sunMass, Vector(10, -20), 'red')
+    app.sun2 = Body(Vector(500, 300), sunRadius, sunMass, Vector(-20, 5), 'orange')
+    app.sun3 = Body(Vector(400, 350), sunRadius, sunMass, Vector(10, 25), 'yellow')
 
 def restartSim(app):
     app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.paused = False
     app.zoomedIn = False
     app.drawTrails = False
-    # app.showLoadingScreen = True
     app.tracerStep = 10
     app.G = 1
     app.dt = 0.01
@@ -21,6 +26,7 @@ def restartSim(app):
     app.cameraMoveStep = 5
 
 def setupGame(app):
+    Body.instances = []
     sunRadius = 10
     sunMass = 100000
     planet1Radius = 4
@@ -48,10 +54,6 @@ def rectanglesOverlap(left1, top1, width1, height1,
     return False
 
 def redrawAll(app):
-    if not app.showLoadingScreen:
-        runMainGame(app)
-
-def runMainGame(app):
     drawRect(0,0,app.width,app.height)
     scale = app.width // app.screen[2]
     boxX = app.screen[0] - app.screen[2] // 2
@@ -73,6 +75,8 @@ def runMainGame(app):
                 xPos = (cBody.position.x - boxX) * scale 
                 yPos = (cBody.position.y - boxY) * scale
                 drawCircle(xPos, yPos, cBody.radius*scale, fill = cBody.color)
+    if app.showLoadingScreen:
+        displayLoadingScreenText(app)
 
         if app.drawTrails == True:
             for i in range(1,len(cBody.previousPositions), app.tracerStep):
@@ -83,14 +87,32 @@ def runMainGame(app):
                 x2 = (pos2.x - boxX) * scale
                 y2 = (pos2.y - boxY) * scale
                 drawLine(x1, y1, x2, y2, fill = 'white')
-    drawRect(app.width-50, 25, 25, 50, border='white', fill=None)
-    thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
-    if thrustHeight > 0:
-        drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
+    if not app.showLoadingScreen:
+        drawRect(app.width-50, 25, 25, 50, border='white', fill=None)
+        thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
+        if thrustHeight > 0:
+            drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
+
+def displayLoadingScreenText(app):
+    drawLabel('Voyage', app.width//2, 200, font='orbitron', fill='white', size=40)
+    drawLabel('By Misho Alexandrov and Sebastian Rodriguez', app.width//2, 250, font='orbitron',
+              fill='white', size=15)
+    drawRect(app.width//2-50, app.height-200, 100, 50, border='white', fill=None)
+    drawLabel('start', app.width//2, app.height-175, font='orbitron', fill='white', size=20)
+
 
 def onMousePress(app, mouseX, mouseY):
     if not app.showLoadingScreen:
         mainGameMousePress(app, mouseX, mouseY)
+    else:
+        pass
+        loadingScreenMousePress(app, mouseX, mouseY)
+
+def loadingScreenMousePress(app, mouseX, mouseY):
+    if (app.width//2 - 50) <= mouseX <= (app.width//2 + 50):
+        if app.height-200 <= mouseY <= app.height-150:
+            app.showLoadingScreen = False
+            setupGame(app)
 
 def mainGameMousePress(app, mouseX, mouseY):
     if 50 <= mouseX <= app.width - 50:
@@ -115,7 +137,7 @@ def mainGameKeyPress(app, key):
         app.drawTrails = not app.drawTrails
     if (key == 's' and app.paused == True):
         takeStep(app)
-    if 'm' is key:
+    if 'm' == key:
         if not app.zoomedIn:
             app.screen[2] = 100
             app.screen[3] = 100
