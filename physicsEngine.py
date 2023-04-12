@@ -75,9 +75,6 @@ def redrawAll(app):
                 xPos = (cBody.position.x - boxX) * scale 
                 yPos = (cBody.position.y - boxY) * scale
                 drawCircle(xPos, yPos, cBody.radius*scale, fill = cBody.color)
-    if app.showLoadingScreen:
-        displayLoadingScreenText(app)
-
         if app.drawTrails == True:
             for i in range(1,len(cBody.previousPositions), app.tracerStep):
                 pos1 = cBody.previousPositions[i-1]
@@ -87,6 +84,8 @@ def redrawAll(app):
                 x2 = (pos2.x - boxX) * scale
                 y2 = (pos2.y - boxY) * scale
                 drawLine(x1, y1, x2, y2, fill = 'white')
+    if app.showLoadingScreen:
+        displayLoadingScreenText(app)
     if not app.showLoadingScreen:
         drawRect(app.width-50, 25, 25, 50, border='white', fill=None)
         thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
