@@ -147,7 +147,6 @@ def onKeyPress(app, key):
 def mainGameKeyPress(app, key):
     if key == 'n':
         app.showFullScreen = not app.showFullScreen
-        app.paused = not app.paused
     if key == 'p':
         app.paused = not app.paused
     if key == 't':
