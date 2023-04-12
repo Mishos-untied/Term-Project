@@ -1,4 +1,4 @@
-#Current lines: 288, target: 1500, progress; 19.20%
+#Current lines: 309, target: 1500, progress; 20.60%
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket
 import math
