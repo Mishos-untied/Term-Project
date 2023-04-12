@@ -1,3 +1,4 @@
+#Current lines: 288, target: 1500, progress; 19.20%
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket
 import math
@@ -16,6 +17,7 @@ def loadingScreenSim(app):
     app.sun3 = Body(Vector(400, 350), sunRadius, sunMass, Vector(10, 25), 'yellow')
 
 def restartSim(app):
+    app.showFullScreen = False
     app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.paused = False
     app.zoomedIn = False
@@ -37,11 +39,11 @@ def setupGame(app):
     planet2Mass = 10
     planet3Radius = 3
     planet3Mass = 15
-    app.sun1 = Body(position=Vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=Vector(0,0), color='gold')
-    app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red')
-    app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green')
-    app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange')
-    app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey')
+    app.sun1 = Body(position=Vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=Vector(0,0), color='gold', name='sun')
+    app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red', name='mars')
+    app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='venus')
+    app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='earth')
+    app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
 
 
 def rectanglesOverlap(left1, top1, width1, height1,
@@ -93,13 +95,24 @@ def redrawAll(app):
         thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
         if thrustHeight > 0:
             drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
+    if app.showFullScreen:
+        displayFullscreen(app)
+
+def displayFullscreen(app):
+    for cBody in Body.instances:
+        labelX = cBody.position.x + cBody.radius + 5
+        labelY = cBody.position.y - cBody.radius - 5
+        squareWidth = len(cBody.name) * 8 + 3
+        drawRect(labelX-3, labelY-8, squareWidth, 16, border='white')
+        drawLabel(cBody.name, labelX, labelY, font='monospace', fill='white', align='left')
+        drawLine(cBody.position.x, cBody.position.y, labelX-3, labelY+8, fill='grey')
 
 def displayLoadingScreenText(app):
-    drawLabel('Voyage', app.width//2, 200, font='orbitron', fill='white', size=40)
-    drawLabel('By Misho Alexandrov and Sebastian Rodriguez', app.width//2, 250, font='orbitron',
+    drawLabel('Voyage', app.width//2, 200, font='monospace', fill='white', size=40)
+    drawLabel('By Misho Alexandrov and Sebastian Rodriguez', app.width//2, 250, font='monospace',
               fill='white', size=15)
     drawRect(app.width//2-50, app.height-200, 100, 50, border='white', fill=None)
-    drawLabel('start', app.width//2, app.height-175, font='orbitron', fill='white', size=20)
+    drawLabel('start', app.width//2, app.height-175, font='monospace', fill='white', size=20)
 
 
 def onMousePress(app, mouseX, mouseY):
@@ -132,6 +145,9 @@ def onKeyPress(app, key):
         mainGameKeyPress(app, key)
 
 def mainGameKeyPress(app, key):
+    if key == 'n':
+        app.showFullScreen = not app.showFullScreen
+        app.paused = not app.paused
     if key == 'p':
         app.paused = not app.paused
     if key == 't':
