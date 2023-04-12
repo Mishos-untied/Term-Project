@@ -1,4 +1,4 @@
-#Current lines: 288, target: 1500, progress; 19.20%
+#Current lines: 309, target: 1500, progress; 20.60%
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket
 import math
@@ -17,7 +17,6 @@ def loadingScreenSim(app):
     app.sun3 = Body(Vector(400, 350), sunRadius, sunMass, Vector(10, 25), 'yellow')
 
 def restartSim(app):
-    app.showFullScreen = False
     app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.paused = False
     app.zoomedIn = False
@@ -95,7 +94,7 @@ def redrawAll(app):
         thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
         if thrustHeight > 0:
             drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
-    if app.showFullScreen:
+    if app.paused and not app.zoomedIn:
         displayFullscreen(app)
 
 def displayFullscreen(app):
@@ -145,8 +144,6 @@ def onKeyPress(app, key):
         mainGameKeyPress(app, key)
 
 def mainGameKeyPress(app, key):
-    if key == 'n':
-        app.showFullScreen = not app.showFullScreen
     if key == 'p':
         app.paused = not app.paused
     if key == 't':
@@ -193,6 +190,9 @@ def mainGameKeyHold(app, keys):
     app.rocket.updateThrust()
         
 def takeStep(app):
+    if app.zoomedIn and not app.paused:
+        app.screen[0] = app.rocket.position.x
+        app.screen[1] = app.rocket.position.y
     for i in range(len(Body.instances)):
         for j in range(i+1,len(Body.instances)):
             cBod1 = Body.instances[i]
