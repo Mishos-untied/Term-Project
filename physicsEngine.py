@@ -3,15 +3,24 @@ from Classes import Vector, Body, Rocket
 import math
 
 def onAppStart(app):
+    app.showLoadingScreen = False
     restartSim(app)
+    if not app.showLoadingScreen:
+        setupGame(app)
 
 def restartSim(app):
     app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.paused = False
     app.zoomedIn = False
     app.drawTrails = False
+    # app.showLoadingScreen = True
     app.tracerStep = 10
     app.G = 1
+    app.dt = 0.01
+    app.trailCutoffConstant = 5
+    app.cameraMoveStep = 5
+
+def setupGame(app):
     sunRadius = 10
     sunMass = 100000
     planet1Radius = 4
@@ -20,14 +29,12 @@ def restartSim(app):
     planet2Mass = 10
     planet3Radius = 3
     planet3Mass = 15
-    app.dt = 0.01
-    app.trailCutoffConstant = 5
-    app.cameraMoveStep = 5
     app.sun1 = Body(position=Vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=Vector(0,0), color='gold')
     app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red')
     app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green')
     app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange')
     app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey')
+
 
 def rectanglesOverlap(left1, top1, width1, height1,
                       left2, top2, width2, height2): #slightly modified version of my own code
@@ -41,6 +48,10 @@ def rectanglesOverlap(left1, top1, width1, height1,
     return False
 
 def redrawAll(app):
+    if not app.showLoadingScreen:
+        runMainGame(app)
+
+def runMainGame(app):
     drawRect(0,0,app.width,app.height)
     scale = app.width // app.screen[2]
     boxX = app.screen[0] - app.screen[2] // 2
@@ -78,6 +89,10 @@ def redrawAll(app):
         drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
 
 def onMousePress(app, mouseX, mouseY):
+    if not app.showLoadingScreen:
+        mainGameMousePress(app, mouseX, mouseY)
+
+def mainGameMousePress(app, mouseX, mouseY):
     if 50 <= mouseX <= app.width - 50:
         if 50 <= mouseY <= app.height - 50:
             if not app.zoomedIn:
@@ -90,6 +105,10 @@ def onMousePress(app, mouseX, mouseY):
                 app.zoomedIn = False
 
 def onKeyPress(app, key):
+    if not app.showLoadingScreen:
+        mainGameKeyPress(app, key)
+
+def mainGameKeyPress(app, key):
     if key == 'p':
         app.paused = not app.paused
     if key == 't':
@@ -110,6 +129,10 @@ def onKeyPress(app, key):
 
 
 def onKeyHold(app, keys):
+    if not app.showLoadingScreen:
+        mainGameKeyHold(app, keys)
+
+def mainGameKeyHold(app, keys):
     if app.screen[2] == 100:
         if 'w' in keys and app.screen[1] > 0:
             app.screen[1] -= 2
