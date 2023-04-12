@@ -8,6 +8,7 @@ def onAppStart(app):
     loadingScreenSim(app)
 
 def loadingScreenSim(app):
+    app.drawTrails = True
     sunMass = 100000
     sunRadius = 10
     app.sun1 = Body(Vector(300, 300), sunRadius, sunMass, Vector(10, -20), 'red')
@@ -15,6 +16,7 @@ def loadingScreenSim(app):
     app.sun3 = Body(Vector(400, 350), sunRadius, sunMass, Vector(10, 25), 'yellow')
 
 def restartSim(app):
+    app.drawTrails = False
     app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.paused = False
     app.zoomedIn = False
