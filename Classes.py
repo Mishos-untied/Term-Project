@@ -34,7 +34,7 @@ class Vector:
                 return (self * (1 / other))
 class Body:
         instances = []
-        def __init__(self, position, radius, mass, velocity, color):
+        def __init__(self, position, radius, mass, velocity, color, name=None):
             self.position = position
             self.previousPositions = []
             self.radius = radius
@@ -43,12 +43,16 @@ class Body:
             self.color = color
             self.momentum = self.velocity * self.mass
             Body.instances.append(self)
+            if name != None:
+                self.name = name
+            else:
+                self.name = Body.instances.index(self)
 
 class Rocket(Body):
     maxThrust = 200
-    def __init__(self, position, radius, mass, velocity, color, angle=0):
+    def __init__(self, position, radius, mass, velocity, color, angle=0, name=None):
         self.rocketAngle = angle
-        super().__init__(position, radius, mass, velocity, color)
+        super().__init__(position, radius, mass, velocity, color, name)
         self.angle = 0
         self.directionVector = Vector(math.cos(self.angle), math.sin(self.angle))
         self.thrustMagnitude = 0
