@@ -8,6 +8,7 @@ def onAppStart(app):
 def restartSim(app):
     app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.paused = False
+    app.zoomedIn = False
     app.drawTrails = False
     app.tracerStep = 10
     app.G = 1
@@ -26,7 +27,7 @@ def restartSim(app):
     app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red')
     app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green')
     app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange')
-    #app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey')
+    app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey')
 
 def rectanglesOverlap(left1, top1, width1, height1,
                       left2, top2, width2, height2): #slightly modified version of my own code
@@ -34,48 +35,60 @@ def rectanglesOverlap(left1, top1, width1, height1,
     right2 = left2 + width2
     bottom1 = top1 + height1
     bottom2 = top2 + height2
-    if right1 >= left2 or right2 >= left1:
+    if right2 >= right1 >= left2 or right1 >= right2 >= left1:
         if bottom2 >= bottom1 >= top2 or bottom1 >= bottom2 >= top1:
             return True
     return False
 
 def redrawAll(app):
     drawRect(0,0,app.width,app.height)
-    scale = app.width / app.screen[2]
+    scale = app.width // app.screen[2]
     boxX = app.screen[0] - app.screen[2] // 2
     boxY = app.screen[1] - app.screen[3]//2
-    drawRect(boxX, boxY, app.screen[2], app.screen[3], border='white')
     for cBody in Body.instances:
         cBodyLeft = cBody.position.x - cBody.radius
         cBodyTop = cBody.position.y - cBody.radius
-        screenLeft, screenTop, screenWidth, screenHeight = app.screen
-        if isinstance(cBody, Rocket):
-            x1 = cBody.position.x + 10 
-            y1 = cBody.position.y 
-            x2 = x3 = cBody.position.x - 5 
-            y2 = y1 - 5
-            y3 = y1 + 5
-            angle = cBody.angle * (180 / math.pi)
-            drawPolygon(x1, y1, x2, y2, x3, y3, fill='white', rotateAngle=angle)
-        else:
-            xPos = cBody.position.x 
-            yPos = cBody.position.y 
-            drawCircle(xPos, yPos, cBody.radius, fill = cBody.color)
+        if rectanglesOverlap(boxX, boxY, app.screen[2], app.screen[3],
+                            cBodyLeft, cBodyTop, cBody.radius*2, cBody.radius*2):
+            if isinstance(cBody, Rocket):
+                x1 = (cBody.position.x - boxX) * scale + 10 
+                y1 = (cBody.position.y - boxY) * scale
+                x2 = x3 = (cBody.position.x - boxX) * scale - 5 
+                y2 = y1 - 5
+                y3 = y1 + 5
+                angle = cBody.angle * (180 / math.pi)
+                drawPolygon(x1, y1, x2, y2, x3, y3, fill='white', rotateAngle=angle)
+            else:
+                xPos = (cBody.position.x - boxX) * scale 
+                yPos = (cBody.position.y - boxY) * scale
+                drawCircle(xPos, yPos, cBody.radius*scale, fill = cBody.color)
 
         if app.drawTrails == True:
             for i in range(1,len(cBody.previousPositions), app.tracerStep):
                 pos1 = cBody.previousPositions[i-1]
-                pos2 = cBody.previousPositions[i]
-                x1 = pos1.x 
-                y1 = pos1.y 
-                x2 = pos2.x 
-                y2 = pos2.y 
+                pos2 = cBody.previousPositions[i] 
+                x1 = (pos1.x - boxX) * scale
+                y1 = (pos1.y - boxY) * scale
+                x2 = (pos2.x - boxX) * scale
+                y2 = (pos2.y - boxY) * scale
                 drawLine(x1, y1, x2, y2, fill = 'white')
-    drawRect(app.width-5, 25, 25, 50, border='white', fill=None)
-    # thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
-    # if thrustHeight > 0:
-    #     drawRect(350, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
-    
+    drawRect(app.width-50, 25, 25, 50, border='white', fill=None)
+    thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
+    if thrustHeight > 0:
+        drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
+
+def onMousePress(app, mouseX, mouseY):
+    if 50 <= mouseX <= app.width - 50:
+        if 50 <= mouseY <= app.height - 50:
+            if not app.zoomedIn:
+                app.screen[0], app.screen[1] = mouseX, mouseY
+                app.screen[2] = app.screen[3] = 100
+                app.zoomedIn = True
+            else:
+                app.screen[0], app.screen[1] = app.width//2, app.height//2
+                app.screen[2], app.screen[3] = app.width, app.height
+                app.zoomedIn = False
+
 def onKeyPress(app, key):
     if key == 'p':
         app.paused = not app.paused
@@ -83,24 +96,29 @@ def onKeyPress(app, key):
         app.drawTrails = not app.drawTrails
     if (key == 's' and app.paused == True):
         takeStep(app)
+    if 'm' is key:
+        if not app.zoomedIn:
+            app.screen[2] = 100
+            app.screen[3] = 100
+            app.zoomedIn = True
+        else:
+            app.screen[0] = app.width//2
+            app.screen[1] = app.height//2
+            app.screen[2] = app.width
+            app.screen[3] = app.height
+            app.zoomedIn = False
 
 
 def onKeyHold(app, keys):
-    print(app.screen[2], app.screen[3])
-    if 'w' in keys:
-        app.screen[1] += 2
-    if 's' in keys:
-        app.screen[1] -= 2
-    if 'a' in keys:
-        app.screen[0] -= 2
-    if 'd' in keys:
-        app.screen[0] += 2
-    if 'm' in keys and app.screen[2] > 100:
-        app.screen[2] -= 5
-        app.screen[3] -= 5
-    if 'n' in keys and app.screen[2] < app.width:
-        app.screen[2] += 5
-        app.screen[3] += 5
+    if app.screen[2] == 100:
+        if 'w' in keys and app.screen[1] > 0:
+            app.screen[1] -= 2
+        if 's' in keys and app.screen[1] < app.height:
+            app.screen[1] += 2
+        if 'a' in keys and app.screen[0] > 0:
+            app.screen[0] -= 2
+        if 'd' in keys and app.screen[0] < app.width:
+            app.screen[0] += 2
     if 'up' in keys and 'down' not in keys:
         app.rocket.thrustMagnitude += 3
     if 'down' in keys and 'up' not in keys:
@@ -111,7 +129,7 @@ def onKeyHold(app, keys):
     if 'right' in keys and 'left' not in keys:
         app.rocket.angle += math.pi / 60
         app.rocket.updateDirection()
-    # app.rocket.updateThrust()
+    app.rocket.updateThrust()
         
 def takeStep(app):
     for i in range(len(Body.instances)):
