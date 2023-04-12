@@ -164,7 +164,7 @@ def mainGameKeyPress(app, key):
 
 
 def onKeyHold(app, keys):
-    if not app.showLoadingScreen:
+    if not app.showLoadingScreen and not app.paused:
         mainGameKeyHold(app, keys)
 
 def mainGameKeyHold(app, keys):
