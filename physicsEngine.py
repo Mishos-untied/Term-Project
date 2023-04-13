@@ -17,6 +17,7 @@ def loadingScreenSim(app):
     app.sun3 = Body(Vector(400, 350), sunRadius, sunMass, Vector(10, 25), 'yellow')
 
 def restartSim(app):
+    app.stepsPerSecond = 30
     app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.paused = False
     app.zoomedIn = False
@@ -99,12 +100,16 @@ def redrawAll(app):
 
 def displayFullscreen(app):
     for cBody in Body.instances:
+        if len(cBody.name) * 2 > app.step:
+            labelIndex = app.step // 2
+        else:
+            labelIndex = len(cBody.name)
         labelX = cBody.position.x + cBody.radius + 5
         labelY = cBody.position.y - cBody.radius - 5
         squareWidth = len(cBody.name) * 8 + 3
-        drawRect(labelX-3, labelY-8, squareWidth, 16, border='white')
-        drawLabel(cBody.name, labelX, labelY, font='monospace', fill='white', align='left')
-        drawLine(cBody.position.x, cBody.position.y, labelX-3, labelY+8, fill='grey')
+        drawRect(labelX-3, labelY-8, squareWidth, 16, border='silver', borderWidth=1)
+        drawLabel(cBody.name[:labelIndex], labelX, labelY, font='monospace', fill='silver', align='left')
+        drawLine(cBody.position.x, cBody.position.y, labelX-3, labelY+8, fill='silver')
 
 def displayLoadingScreenText(app):
     drawLabel('Voyage', app.width//2, 200, font='monospace', fill='white', size=40)
@@ -118,7 +123,6 @@ def onMousePress(app, mouseX, mouseY):
     if not app.showLoadingScreen:
         mainGameMousePress(app, mouseX, mouseY)
     else:
-        pass
         loadingScreenMousePress(app, mouseX, mouseY)
 
 def loadingScreenMousePress(app, mouseX, mouseY):
@@ -146,6 +150,7 @@ def onKeyPress(app, key):
 def mainGameKeyPress(app, key):
     if key == 'p':
         app.paused = not app.paused
+        app.step = 0
     if key == 't':
         app.drawTrails = not app.drawTrails
     if (key == 's' and app.paused == True):
@@ -223,6 +228,8 @@ def takeStep(app):
                 cBod2.position = cBod2.position + (cBod2.momentum/cBod2.mass)*app.dt
 
 def onStep(app):
+    if app.paused:
+        app.step += 1
     if not app.paused:
         takeStep(app)
 
