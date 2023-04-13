@@ -41,6 +41,7 @@ class Body:
             self.mass = mass
             self.velocity = velocity
             self.color = color
+            self.netForceFelt = Vector(0,0)
             self.momentum = self.velocity * self.mass
             Body.instances.append(self)
             if name != None:
