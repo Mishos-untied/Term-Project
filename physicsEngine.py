@@ -42,7 +42,7 @@ def setupGame(app):
     app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red', name='mars')
     app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='venus')
     app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='earth')
-    app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
+    app.rocket = Rocket(position=Vector(app.width//2, 500), radius=4, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
 
 def rectanglesOverlap(left1, top1, width1, height1,
                       left2, top2, width2, height2): #slightly modified version of my own code
@@ -98,12 +98,26 @@ def redrawAll(app):
 
 def displayFullscreen(app):
     for cBody in Body.instances:
-        labelX = cBody.position.x + cBody.radius + 5
-        labelY = cBody.position.y - cBody.radius - 5
-        squareWidth = len(cBody.name) * 8 + 3
-        drawRect(labelX-3, labelY-8, squareWidth, 16, border='white')
-        drawLabel(cBody.name, labelX, labelY, font='monospace', fill='white', align='left')
-        drawLine(cBody.position.x, cBody.position.y, labelX-3, labelY+8, fill='grey')
+        if cBody.name != 'rocket':
+            if len(cBody.name) * 2 > app.step:
+                labelIndex = app.step // 2
+            else:
+                labelIndex = len(cBody.name)
+            labelX = cBody.position.x + cBody.radius + 5
+            labelY = cBody.position.y - cBody.radius - 5
+            squareWidth = len(cBody.name) * 8 + 3
+            if squareWidth > app.step:
+                curLength = app.step
+            else:
+                curLength = squareWidth
+            scaling = squareWidth/curLength
+            drawRect(labelX-3, labelY-8, curLength, 16/scaling, border='silver', borderWidth=1)
+            drawLabel(cBody.name[:labelIndex], labelX, labelY, font='monospace', fill='silver', align='left',
+                    size=12/scaling)
+            drawLine(cBody.position.x, cBody.position.y, labelX-3/scaling, labelY+8/scaling, fill='silver')
+    cyclePosition = app.step % 50
+    drawCircle(app.rocket.position.x, app.rocket.position.y, (cyclePosition//2)+1, border='white',
+               fill=None, opacity=100- cyclePosition*2)
 
 def displayLoadingScreenText(app):
     drawLabel('Voyage', app.width//2, 200, font='monospace', fill='white', size=40)
@@ -145,6 +159,7 @@ def onKeyPress(app, key):
 def mainGameKeyPress(app, key):
     if key == 'p':
         app.paused = not app.paused
+        app.step = 1
     if key == 't':
         app.drawTrails = not app.drawTrails
     if (key == 's' and app.paused == True):
@@ -228,6 +243,8 @@ def takeStep(app):
         cBod.position = cBod.position + (cBod.momentum/cBod.mass)*app.dt
 
 def onStep(app):
+    if app.paused:
+        app.step += 1
     if not app.paused:
         takeStep(app)
 
