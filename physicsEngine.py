@@ -44,7 +44,6 @@ def setupGame(app):
     app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='earth')
     app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
 
-
 def rectanglesOverlap(left1, top1, width1, height1,
                       left2, top2, width2, height2): #slightly modified version of my own code
     right1 = left1 + width1  #got this from:https://cs3-112-f22.academy.cs.cmu.edu/exercise/4581
@@ -193,33 +192,40 @@ def takeStep(app):
     if app.zoomedIn and not app.paused:
         app.screen[0] = app.rocket.position.x
         app.screen[1] = app.rocket.position.y
+    
+
+    # compute net gravitational forces acting on each body
+    for cBod in Body.instances:
+        cBod.netForceFelt = Vector(0,0)
     for i in range(len(Body.instances)):
         for j in range(i+1,len(Body.instances)):
             cBod1 = Body.instances[i]
             cBod2 = Body.instances[j]
             
             r = cBod2.position - cBod1.position
-            
-            if r.mag > (cBod1.radius + cBod2.radius):
-                Fg = r*(-app.G*cBod1.mass*cBod2.mass) / (r.mag**3)
-                if isinstance(cBod2, Rocket):
-                    Ft = cBod2.thrustVector
-                else:
-                    Ft = Vector(0, 0)
-                Fnet = Ft + Fg
 
-                cBod1.momentum = cBod1.momentum - Fnet*app.dt
-                cBod2.momentum = cBod2.momentum + Fnet*app.dt
+            if r.mag > (cBod1.radius + cBod2.radius):
+
+                Fg = r*(-app.G*cBod1.mass*cBod2.mass) / (r.mag**3)
+
+                cBod1.netForceFelt -= Fg
+                cBod2.netForceFelt += Fg
+
+    if app.showLoadingScreen == False:
+    #add rocket thrust
+        app.rocket.netForceFelt += app.rocket.thrustVector
+
+    #update momentums using net force
+    for cBod in Body.instances:
+
+        cBod.momentum = cBod.momentum + (cBod.netForceFelt * app.dt)
                 
-                cBod1.previousPositions.append(cBod1.position) 
-                cBod2.previousPositions.append(cBod2.position)
-                if (len(cBod1.previousPositions) * app.dt) > app.trailCutoffConstant:
-                    cBod1.previousPositions.pop(0)
-                if (len(cBod2.previousPositions) * app.dt) > app.trailCutoffConstant:
-                    cBod2.previousPositions.pop(0)
-                
-                cBod1.position = cBod1.position + (cBod1.momentum/cBod1.mass)*app.dt
-                cBod2.position = cBod2.position + (cBod2.momentum/cBod2.mass)*app.dt
+        #update trail
+        cBod.previousPositions.append(cBod.position)
+        if (len(cBod.previousPositions) * app.dt) > app.trailCutoffConstant:
+            cBod.previousPositions.pop(0)
+        
+        cBod.position = cBod.position + (cBod.momentum/cBod.mass)*app.dt
 
 def onStep(app):
     if not app.paused:
@@ -229,15 +235,3 @@ def main():
     runApp(width=700, height=700)
 
 main()
-
-
-
-
-    
-    
-
-
-
-
-
-
