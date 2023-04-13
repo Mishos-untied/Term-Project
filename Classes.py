@@ -49,7 +49,7 @@ class Body:
                 self.name = Body.instances.index(self)
 
 class Rocket(Body):
-    maxThrust = 200
+    maxThrust = 50
     def __init__(self, position, radius, mass, velocity, color, angle=0, name=None):
         self.rocketAngle = angle
         super().__init__(position, radius, mass, velocity, color, name)

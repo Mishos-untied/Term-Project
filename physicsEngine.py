@@ -42,7 +42,7 @@ def setupGame(app):
     app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red', name='mars')
     app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='venus')
     app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='earth')
-    app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
+    app.rocket = Rocket(position=Vector(app.width//2, 550), radius=4, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
 
 
 def rectanglesOverlap(left1, top1, width1, height1,
@@ -164,7 +164,7 @@ def mainGameKeyPress(app, key):
 
 
 def onKeyHold(app, keys):
-    if not app.showLoadingScreen and not app.paused:
+    if not app.showLoadingScreen:
         mainGameKeyHold(app, keys)
 
 def mainGameKeyHold(app, keys):
@@ -177,17 +177,18 @@ def mainGameKeyHold(app, keys):
             app.screen[0] -= 2
         if 'd' in keys and app.screen[0] < app.width:
             app.screen[0] += 2
-    if 'up' in keys and 'down' not in keys:
-        app.rocket.thrustMagnitude += 3
-    if 'down' in keys and 'up' not in keys:
-        app.rocket.thrustMagnitude -= 3
-    if 'left' in keys and 'right' not in keys:
-        app.rocket.angle -= math.pi / 60
-        app.rocket.updateDirection()
-    if 'right' in keys and 'left' not in keys:
-        app.rocket.angle += math.pi / 60
-        app.rocket.updateDirection()
-    app.rocket.updateThrust()
+    if not app.paused:
+        if 'up' in keys and 'down' not in keys:
+            app.rocket.thrustMagnitude += 3
+        if 'down' in keys and 'up' not in keys:
+            app.rocket.thrustMagnitude -= 3
+        if 'left' in keys and 'right' not in keys:
+            app.rocket.angle -= math.pi / 60
+            app.rocket.updateDirection()
+        if 'right' in keys and 'left' not in keys:
+            app.rocket.angle += math.pi / 60
+            app.rocket.updateDirection()
+        app.rocket.updateThrust()
         
 def takeStep(app):
     if app.zoomedIn and not app.paused:
