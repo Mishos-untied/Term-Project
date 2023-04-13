@@ -33,11 +33,11 @@ def setupGame(app):
     sunRadius = 10
     sunMass = 100000
     planet1Radius = 4
-    planet1Mass = 200
+    planet1Mass = 500
     planet2Radius = 3
-    planet2Mass = 10
+    planet2Mass = 200
     planet3Radius = 3
-    planet3Mass = 15
+    planet3Mass = 150
     app.sun1 = Body(position=Vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=Vector(0,0), color='gold', name='sun')
     app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red', name='mars')
     app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='venus')
