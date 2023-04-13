@@ -1,3 +1,4 @@
+#using realistic constants
 #Current lines: 309, target: 1500, progress; 20.60%
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket
@@ -22,27 +23,30 @@ def restartSim(app):
     app.zoomedIn = False
     app.drawTrails = False
     app.tracerStep = 10
-    app.G = 1
-    app.dt = 0.01
+
     app.trailCutoffConstant = 5
     app.cameraMoveStep = 5
+
+    app.G = 6.67384e-11
+    app.dt = 0.01
+    app.scale = 
+    
 
 def setupGame(app):
     app.drawTrails = False
     Body.instances = []
+
     sunRadius = 10
-    sunMass = 100000
-    planet1Radius = 4
-    planet1Mass = 200
-    planet2Radius = 3
-    planet2Mass = 10
-    planet3Radius = 3
-    planet3Mass = 15
+    sunMass = 1.9891e30
+    earthRadius = 4
+    earthMass = 5.97219e24
+    earthSunDistance = 1.5e11
+    rocketMass = 0
+    rocketRadius = 0
     app.sun1 = Body(position=Vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=Vector(0,0), color='gold', name='sun')
-    app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red', name='mars')
-    app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='venus')
-    app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='earth')
+    app.earth = Body(position=Vector(app.width//2,app.height//2 + earthSunDistance), radius=earthRadius, mass=earthMass, velocity=Vector(0,0), color='blue', name='earth')
     app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
+
 
 def rectanglesOverlap(left1, top1, width1, height1,
                       left2, top2, width2, height2): #slightly modified version of my own code
@@ -192,40 +196,33 @@ def takeStep(app):
     if app.zoomedIn and not app.paused:
         app.screen[0] = app.rocket.position.x
         app.screen[1] = app.rocket.position.y
-    
-
-    # compute net gravitational forces acting on each body
-    for cBod in Body.instances:
-        cBod.netForceFelt = Vector(0,0)
     for i in range(len(Body.instances)):
         for j in range(i+1,len(Body.instances)):
             cBod1 = Body.instances[i]
             cBod2 = Body.instances[j]
             
             r = cBod2.position - cBod1.position
-
+            
             if r.mag > (cBod1.radius + cBod2.radius):
-
                 Fg = r*(-app.G*cBod1.mass*cBod2.mass) / (r.mag**3)
+                if isinstance(cBod2, Rocket):
+                    Ft = cBod2.thrustVector
+                else:
+                    Ft = Vector(0, 0)
+                Fnet = Ft + Fg
 
-                cBod1.netForceFelt -= Fg
-                cBod2.netForceFelt += Fg
-
-    if app.showLoadingScreen == False:
-    #add rocket thrust
-        app.rocket.netForceFelt += app.rocket.thrustVector
-
-    #update momentums using net force
-    for cBod in Body.instances:
-
-        cBod.momentum = cBod.momentum + (cBod.netForceFelt * app.dt)
+                cBod1.momentum = cBod1.momentum - Fnet*app.dt
+                cBod2.momentum = cBod2.momentum + Fnet*app.dt
                 
-        #update trail
-        cBod.previousPositions.append(cBod.position)
-        if (len(cBod.previousPositions) * app.dt) > app.trailCutoffConstant:
-            cBod.previousPositions.pop(0)
-        
-        cBod.position = cBod.position + (cBod.momentum/cBod.mass)*app.dt
+                cBod1.previousPositions.append(cBod1.position) 
+                cBod2.previousPositions.append(cBod2.position)
+                if (len(cBod1.previousPositions) * app.dt) > app.trailCutoffConstant:
+                    cBod1.previousPositions.pop(0)
+                if (len(cBod2.previousPositions) * app.dt) > app.trailCutoffConstant:
+                    cBod2.previousPositions.pop(0)
+                
+                cBod1.position = cBod1.position + (cBod1.momentum/cBod1.mass)*app.dt
+                cBod2.position = cBod2.position + (cBod2.momentum/cBod2.mass)*app.dt
 
 def onStep(app):
     if not app.paused:
@@ -235,3 +232,15 @@ def main():
     runApp(width=700, height=700)
 
 main()
+
+
+
+
+    
+    
+
+
+
+
+
+
