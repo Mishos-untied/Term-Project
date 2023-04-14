@@ -26,8 +26,18 @@ def restartSim(app):
     app.dt = 0.01
     app.trailCutoffConstant = 5
     app.cameraMoveStep = 5
+    app.gameOver = False
+
+def setupGameOver(app):
+    Body.instances = []
+    app.drawTrails = False
+    app.step = 1
+
 
 def setupGame(app):
+    app.zoomedIn = False
+    app.gameOver = False
+    app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.drawTrails = False
     Body.instances = []
     sunRadius = 10
@@ -88,13 +98,38 @@ def redrawAll(app):
                 drawLine(x1, y1, x2, y2, fill = 'white')
     if app.showLoadingScreen:
         displayLoadingScreenText(app)
-    if not app.showLoadingScreen:
+    if not app.showLoadingScreen and not app.gameOver:
         drawRect(app.width-50, 25, 25, 50, border='white', fill=None)
         thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
         if thrustHeight > 0:
             drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
     if app.paused and not app.zoomedIn:
         displayFullscreen(app)
+    if app.gameOver:
+        drawGameOverScreen(app)
+
+def drawGameOverScreen(app):
+    squareWidth = 280
+    if 40 > app.step:
+        labelIndex = app.step // 5
+        curLength = app.step * 7
+    else:
+        labelIndex = 10
+        curLength = 280
+    scaling = squareWidth/curLength
+    drawRect(app.width//2, app.height//2, 280/scaling, 50, border='red', align='center')
+    drawLabel('You died'[:labelIndex], app.width//2, app.height//2, fill='red', font='monospace', size=50)
+    if app.step > 50:
+        squareWidth = 98
+        if 64 > app.step:
+            labelIndex = (app.step - 50) // 2
+            curLength = (app.step - 50) * 7
+        else:
+            labelIndex = 8
+            curLength = 98
+        scaling = squareWidth/curLength
+        drawRect(app.width//2, app.height//2+100, squareWidth/scaling, 20, border='white', align='center', borderWidth=1)
+        drawLabel('restart'[:labelIndex], app.width//2, app.height//2+100, fill='white', font='monospace', size=20)
 
 def displayFullscreen(app):
     for cBody in Body.instances:
@@ -128,11 +163,19 @@ def displayLoadingScreenText(app):
 
 
 def onMousePress(app, mouseX, mouseY):
-    if not app.showLoadingScreen:
-        mainGameMousePress(app, mouseX, mouseY)
+    if not app.gameOver:
+        if not app.showLoadingScreen:
+            mainGameMousePress(app, mouseX, mouseY)
+        else:
+            pass
+            loadingScreenMousePress(app, mouseX, mouseY)
     else:
-        pass
-        loadingScreenMousePress(app, mouseX, mouseY)
+        gameOverMousePress(app, mouseX, mouseY)
+
+def gameOverMousePress(app, mouseX, mouseY):
+    if 301 <= mouseX <= 399:
+        if 440 <= mouseY <= 460:
+            setupGame(app)
 
 def loadingScreenMousePress(app, mouseX, mouseY):
     if (app.width//2 - 50) <= mouseX <= (app.width//2 + 50):
@@ -153,7 +196,7 @@ def mainGameMousePress(app, mouseX, mouseY):
                 app.zoomedIn = False
 
 def onKeyPress(app, key):
-    if not app.showLoadingScreen:
+    if not app.showLoadingScreen and not app.gameOver:
         mainGameKeyPress(app, key)
 
 def mainGameKeyPress(app, key):
@@ -178,7 +221,7 @@ def mainGameKeyPress(app, key):
 
 
 def onKeyHold(app, keys):
-    if not app.showLoadingScreen:
+    if not app.showLoadingScreen and not app.gameOver:
         mainGameKeyHold(app, keys)
 
 def mainGameKeyHold(app, keys):
@@ -208,6 +251,18 @@ def takeStep(app):
         app.screen[0] = app.rocket.position.x
         app.screen[1] = app.rocket.position.y
     
+    if not app.showLoadingScreen:
+        rocketLeft = app.rocket.position.x - app.rocket.radius
+        rocketTop = app.rocket.position.y - app.rocket.radius
+        for cBody in Body.instances:
+            if not isinstance(cBody, Rocket):
+                cBodyLeft = cBody.position.x - cBody.radius
+                cBodyTop = cBody.position.y - cBody.radius
+                if rectanglesOverlap(rocketLeft, rocketTop, app.rocket.radius*2, app.rocket.radius*2,
+                                    cBodyLeft, cBodyTop, cBody.radius*2, cBody.radius*2):
+                    app.gameOver = True
+                    setupGameOver(app)
+
 
     # compute net gravitational forces acting on each body
     for cBod in Body.instances:
@@ -243,7 +298,7 @@ def takeStep(app):
         cBod.position = cBod.position + (cBod.momentum/cBod.mass)*app.dt
 
 def onStep(app):
-    if app.paused:
+    if app.paused or app.gameOver:
         app.step += 1
     if not app.paused:
         takeStep(app)
