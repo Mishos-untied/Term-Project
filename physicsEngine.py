@@ -1,4 +1,4 @@
-#Current lines: 309, target: 1500, progress; 20.60%
+#Current lines: 387, target: 1500, progress; 25.80%
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket
 import math
@@ -50,8 +50,8 @@ def setupGame(app):
     planet3Mass = 15
     app.sun1 = Body(position=Vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=Vector(0,0), color='gold', name='sun')
     app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red', name='mars')
-    app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='venus')
-    app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='earth')
+    app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='earth')
+    app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='venus')
     app.rocket = Rocket(position=Vector(app.width//2, 500), radius=4, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
 
 def rectanglesOverlap(left1, top1, width1, height1,
