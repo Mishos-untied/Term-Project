@@ -52,7 +52,7 @@ def setupGame(app):
     app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red', name='mars')
     app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='earth')
     app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='venus')
-    app.rocket = Rocket(position=Vector(app.width//2, 500), radius=4, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
+    app.rocket = Rocket(position=Vector(app.width//2, 500), radius=2, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
 
 def rectanglesOverlap(left1, top1, width1, height1,
                       left2, top2, width2, height2): #slightly modified version of my own code
