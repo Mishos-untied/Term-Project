@@ -17,6 +17,7 @@ def loadingScreenSim(app):
     app.sun3 = Body(Vector(400, 350), sunRadius, sunMass, Vector(10, 25), 'yellow')
 
 def restartSim(app):
+    app.showSettings = False
     app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.paused = False
     app.zoomedIn = False
@@ -35,6 +36,9 @@ def setupGameOver(app):
 
 
 def setupGame(app):
+    app.step = 1
+    app.showLoadingScreen = False
+    app.showSettings = False
     app.zoomedIn = False
     app.gameOver = False
     app.screen = [app.width//2, app.height//2, app.width, app.height]
@@ -103,7 +107,17 @@ def redrawAll(app):
         thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
         if thrustHeight > 0:
             drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
-    if app.paused and not app.zoomedIn:
+        drawCircle(app.width-100, 50, 25, border='white')
+        drawCircle(app.width-100, 50, 5, fill='white')
+        velocity = app.rocket.getVelocity()
+        if velocity > 100:
+            extraAngle = 3 * math.pi / 2
+        else:
+            extraAngle = (3 * math.pi /2)  * (velocity / 100)
+        lineFinalX = (app.width-100) + 25*math.cos(2*math.pi / 3 + extraAngle)
+        lineFinalY = 50 + 25*math.sin(2 * math.pi / 3 + extraAngle)
+        drawLine(app.width-100, 50, lineFinalX, lineFinalY, fill='white')
+    if not app.zoomedIn and not app.showLoadingScreen:
         displayFullscreen(app)
     if app.gameOver:
         drawGameOverScreen(app)
@@ -151,15 +165,23 @@ def displayFullscreen(app):
                     size=12/scaling)
             drawLine(cBody.position.x, cBody.position.y, labelX-3/scaling, labelY+8/scaling, fill='silver')
     cyclePosition = app.step % 50
-    drawCircle(app.rocket.position.x, app.rocket.position.y, (cyclePosition//2)+1, border='white',
-               fill=None, opacity=100- cyclePosition*2)
+    if not app.gameOver:
+        drawCircle(app.rocket.position.x, app.rocket.position.y, (cyclePosition//2)+1, border='white',
+                fill=None, opacity=100- cyclePosition*2)
 
 def displayLoadingScreenText(app):
-    drawLabel('Voyage', app.width//2, 200, font='monospace', fill='white', size=40)
-    drawLabel('By Misho Alexandrov and Sebastian Rodriguez', app.width//2, 250, font='monospace',
-              fill='white', size=15)
-    drawRect(app.width//2-50, app.height-200, 100, 50, border='white', fill=None)
-    drawLabel('start', app.width//2, app.height-175, font='monospace', fill='white', size=20)
+    if not app.showSettings:
+        drawLabel('Voyage', app.width//2, 200, font='monospace', fill='white', size=40)
+        drawLabel('By Misho Alexandrov and Sebastian Rodriguez', app.width//2, 250, font='monospace',
+                fill='white', size=15)
+        drawRect(app.width//2-50, app.height-200, 100, 50, border='white', fill=None)
+        drawLabel('start', app.width//2, app.height-175, font='monospace', fill='white', size=20)
+    else:
+        for i in range(3):
+            drawRect(app.width//2-100, 200+100*i, 200, 50, border='white')
+        drawLabel('Stage 1: Takeoff', app.width//2, 225, fill='white', font='monospace', size=19)
+        drawLabel('Stage 2: Orbit', app.width//2, 325, fill='white', font='monospace', size=19)
+        drawLabel('Stage 3: Landing', app.width//2, 425, fill='white', font='monospace', size=19)
 
 
 def onMousePress(app, mouseX, mouseY):
@@ -167,7 +189,6 @@ def onMousePress(app, mouseX, mouseY):
         if not app.showLoadingScreen:
             mainGameMousePress(app, mouseX, mouseY)
         else:
-            pass
             loadingScreenMousePress(app, mouseX, mouseY)
     else:
         gameOverMousePress(app, mouseX, mouseY)
@@ -178,10 +199,16 @@ def gameOverMousePress(app, mouseX, mouseY):
             setupGame(app)
 
 def loadingScreenMousePress(app, mouseX, mouseY):
-    if (app.width//2 - 50) <= mouseX <= (app.width//2 + 50):
-        if app.height-200 <= mouseY <= app.height-150:
-            app.showLoadingScreen = False
-            setupGame(app)
+    if not app.showSettings:
+        if (app.width//2 - 50) <= mouseX <= (app.width//2 + 50):
+            if app.height-200 <= mouseY <= app.height-150:
+                app.showSettings = True
+    else:
+        if (app.width//2 - 100) <= mouseX <= (app.width // 2 + 100):
+            if 300 <= mouseY <= 350:
+                setupGame(app)
+                
+            
 
 def mainGameMousePress(app, mouseX, mouseY):
     if 50 <= mouseX <= app.width - 50:
@@ -202,7 +229,6 @@ def onKeyPress(app, key):
 def mainGameKeyPress(app, key):
     if key == 'p':
         app.paused = not app.paused
-        app.step = 1
     if key == 't':
         app.drawTrails = not app.drawTrails
     if (key == 's' and app.paused == True):
@@ -298,7 +324,7 @@ def takeStep(app):
         cBod.position = cBod.position + (cBod.momentum/cBod.mass)*app.dt
 
 def onStep(app):
-    if app.paused or app.gameOver:
+    if not app.showLoadingScreen:
         app.step += 1
     if not app.paused:
         takeStep(app)
