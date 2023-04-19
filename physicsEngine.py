@@ -36,6 +36,7 @@ def setupGameOver(app):
 
 
 def setupGame(app):
+    app.step = 1
     app.showLoadingScreen = False
     app.showSettings = False
     app.zoomedIn = False
@@ -116,7 +117,7 @@ def redrawAll(app):
         lineFinalX = (app.width-100) + 25*math.cos(2*math.pi / 3 + extraAngle)
         lineFinalY = 50 + 25*math.sin(2 * math.pi / 3 + extraAngle)
         drawLine(app.width-100, 50, lineFinalX, lineFinalY, fill='white')
-    if app.paused and not app.zoomedIn:
+    if not app.zoomedIn and not app.showLoadingScreen:
         displayFullscreen(app)
     if app.gameOver:
         drawGameOverScreen(app)
@@ -164,8 +165,9 @@ def displayFullscreen(app):
                     size=12/scaling)
             drawLine(cBody.position.x, cBody.position.y, labelX-3/scaling, labelY+8/scaling, fill='silver')
     cyclePosition = app.step % 50
-    drawCircle(app.rocket.position.x, app.rocket.position.y, (cyclePosition//2)+1, border='white',
-               fill=None, opacity=100- cyclePosition*2)
+    if not app.gameOver:
+        drawCircle(app.rocket.position.x, app.rocket.position.y, (cyclePosition//2)+1, border='white',
+                fill=None, opacity=100- cyclePosition*2)
 
 def displayLoadingScreenText(app):
     if not app.showSettings:
@@ -227,7 +229,6 @@ def onKeyPress(app, key):
 def mainGameKeyPress(app, key):
     if key == 'p':
         app.paused = not app.paused
-        app.step = 1
     if key == 't':
         app.drawTrails = not app.drawTrails
     if (key == 's' and app.paused == True):
@@ -323,7 +324,7 @@ def takeStep(app):
         cBod.position = cBod.position + (cBod.momentum/cBod.mass)*app.dt
 
 def onStep(app):
-    if app.paused or app.gameOver:
+    if not app.showLoadingScreen:
         app.step += 1
     if not app.paused:
         takeStep(app)
