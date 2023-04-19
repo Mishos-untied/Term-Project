@@ -28,9 +28,7 @@ def restartSim(app):
     app.cameraMoveStep = 5
 
     app.G = 6.67384e-11
-    app.dt = 0.01
-    app.scale = 
-    
+    app.dt = 0.01    
 
 def setupGame(app):
     app.drawTrails = False
@@ -41,12 +39,11 @@ def setupGame(app):
     earthRadius = 4
     earthMass = 5.97219e24
     earthSunDistance = 1.5e11
-    rocketMass = 0
+    rocketMass = 28801
     rocketRadius = 0
     app.sun1 = Body(position=Vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=Vector(0,0), color='gold', name='sun')
     app.earth = Body(position=Vector(app.width//2,app.height//2 + earthSunDistance), radius=earthRadius, mass=earthMass, velocity=Vector(0,0), color='blue', name='earth')
-    app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
-
+    app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey', angle = 0, maxThrust = 91190, burnTime = 750, fuelMass = 18410, name='Apollo CSM')
 
 def rectanglesOverlap(left1, top1, width1, height1,
                       left2, top2, width2, height2): #slightly modified version of my own code
@@ -94,7 +91,7 @@ def redrawAll(app):
         displayLoadingScreenText(app)
     if not app.showLoadingScreen:
         drawRect(app.width-50, 25, 25, 50, border='white', fill=None)
-        thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
+        thrustHeight = 50 * app.rocket.thrustMagnitude / app.rocket.maxThrust
         if thrustHeight > 0:
             drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
     if app.paused and not app.zoomedIn:

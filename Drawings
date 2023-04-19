@@ -1,0 +1,64 @@
+#Current lines: 309, target: 1500, progress; 20.60%
+from cmu_graphics import *
+from Classes import Vector, Body, Rocket
+import math
+
+def onAppStart(app):
+    app.thrustPercent = 0
+    app.rocketPosition = Vector(app.width//2, app.height//2)
+    
+
+def redrawAll(app):
+    drawRect(0,0,app.width, app.height, fill = 'black')
+    drawRocket(app,height=500)
+
+def drawRocket(app, height):
+    width = height/4
+    cX = app.rocketPosition.x
+    cY = app.rocketPosition.y
+    drawRect(cX-width/2,cY-(height//6),width,height/3, fill='silver', border=None)
+    drawPolygon(cX+width/2, cY-(height/6), cX+(width/7), cY-(height/6)-(height/7), cX-(width/7), cY-(height/6)-(height/7), cX-width/2, cY-(height/6), fill = 'lightGray' )
+    drawArc(cX, cY+(height/6)+(height/8), width/2, height/4,270,90, fill = 'dimGray')
+    drawArc(cX, cY+(height/6)+(height/8), width/2, height/4,0,90, fill = 'dimGray')
+    drawArc(cX-(width/2)+(width/8)+(height/60), cY+(height/6), height/30, height/30, 180, 90, fill='saddlebrown')
+    drawArc(cX+(width/2)-(width/8)-(height/60), cY+(height/6), height/30, height/30, 90, 180, fill='saddlebrown')
+    drawRect(cX-(width/2)+(width/8)+(height/60), cY+(height/6), 2*((width/2)-(width/5)), height/60, fill='saddlebrown')
+    drawPolygon(cX+width/14, cY-(height/6)-(height/7), cX+width/12, cY-(height/6)-(height/6.5), cX, cY-(height/6)-(height/5.8), cX-width/12, cY-(height/6)-(height/6.5), cX-width/14, cY-(height/6)-(height/7), fill='grey' )
+    drawRect(cX-width/2, cY-height/6.4, width/4, height/22, fill='snow')
+    drawRect(cX-width/2 + width/3, cY-height/6.4, width/4, height/22, fill='snow')
+    drawRect(cX-width/2 + width/3 + width/3, cY-height/6.4, width/4, height/22, fill='snow')
+    drawRect(cX-width/2, cY+height/16, width, height/16, fill='snow')
+    drawRect(cX-width/2+width/12, cY-height/10, width/3, height/4, fill = 'darkGrey' )
+
+    if app.thrustPercent > 0:
+        thrustDecimal = app.thrustPercent/100
+        drawPolygon((cX+width/5),(cY+height/3.4),(cX-width/5),(cY+height/3.4),cX,(cY+height/3)+ ((height/4)*thrustDecimal), fill=gradient('white', 'blue', start='top'), opacity = 50)
+        drawPolygon((cX+width/6),(cY+height/3.4),(cX-width/6),(cY+height/3.4),cX,(cY+height/3)+ ((height/12)*thrustDecimal), fill=gradient('white','royalBlue', start='top'), opacity = 50)
+        drawPolygon((cX+width/10),(cY+height/3.4),(cX-width/8),(cY+height/3.4),cX,(cY+height/3)+ ((height/50)*thrustDecimal), fill=gradient('white','lightSteelBlue', start='top'), opacity = 80)
+
+def displayFullscreen(app):
+    pass
+
+def displayLoadingScreenText(app):
+    pass
+
+def onKeyPress(app, key):
+    if key == 'up':
+        app.thrustPercent += 10
+    if key == 'down':
+        app.thrustPercent -=10
+    print(app.thrustPercent)
+
+def mainGameKeyHold(app, keys):
+    pass
+        
+def takeStep(app):
+    pass
+
+def onStep(app):
+    pass
+
+def main():
+    runApp(width=700, height=700)
+
+main()

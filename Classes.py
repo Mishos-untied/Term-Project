@@ -1,5 +1,10 @@
 import math
 
+scale = 1.3e-9
+dt = 0.00001
+dtsPerSecond = 0.0001
+
+
 class Vector:
         def __init__(self, x, y):
             self.x = x
@@ -50,30 +55,50 @@ class Body:
                 self.name = Body.instances.index(self)
 
 class Rocket(Body):
-    maxThrust = 200
-    def __init__(self, position, radius, mass, velocity, color, angle=0, name=None):
+    def __init__(self, position, radius, mass, velocity, color, angle=0, maxThrust = 91.19e3, burnTime = 750, fuelMass = 18410,  name='Apollo CSM'):
+        self.burnTime = burnTime
+        self.outOfFuel = False
+        self.maxThrust = maxThrust * scale
+        self.fuelMass = fuelMass
+        self.fuelPerSec = self.fuelMass / self.burnTime
         self.rocketAngle = angle
         super().__init__(position, radius, mass, velocity, color, name)
         self.angle = 0
         self.directionVector = Vector(math.cos(self.angle), math.sin(self.angle))
         self.thrustMagnitude = 0
-        if 0 <= self.thrustMagnitude <= Rocket.maxThrust:
+        if 0 <= self.thrustMagnitude <= self.maxThrust:
             self.thrustMagnitude = self.thrustMagnitude
-        elif self.thrustMagnitude > Rocket.maxThrust:
-            self.thrustMagnitude = Rocket.maxThrust
+        elif self.thrustMagnitude > self.maxThrust:
+            self.thrustMagnitude = self.maxThrust
         elif self.thrustMagnitude < 0:
             self.thrustMagnitude = 0
         self.thrustVector = self.directionVector * self.thrustMagnitude
     
     def updateThrust(self):
-        if 0 <= self.thrustMagnitude <= Rocket.maxThrust:
-            self.thrustMagnitude = self.thrustMagnitude
-        elif self.thrustMagnitude > Rocket.maxThrust:
-            self.thrustMagnitude = Rocket.maxThrust
-        elif self.thrustMagnitude < 0:
+        if not self.outOfFuel:
+            if 0 <= self.thrustMagnitude <= self.maxThrust:
+                self.thrustMagnitude = self.thrustMagnitude
+            elif self.thrustMagnitude > self.maxThrust:
+                self.thrustMagnitude = self.maxThrust
+            elif self.thrustMagnitude < 0:
+                self.thrustMagnitude = 0
+            self.thrustVector = self.directionVector * self.thrustMagnitude
+        
+    def updatePropellant(self):
+        currentPercentDecimal = (self.thrustMagnitude / self.maxThrust)
+        timeInterval = dt / dtsPerSecond
+        fuelUsedInTimeInterval = currentPercentDecimal * self.fuelPerSec * timeInterval
+        if self.fuelMass - fuelUsedInTimeInterval > 0:
+            self.fuelMass -= fuelUsedInTimeInterval
+            self.mass -= fuelUsedInTimeInterval
+        elif self.fuelMass - fuelUsedInTimeInterval < 0:
             self.thrustMagnitude = 0
-        self.thrustVector = self.directionVector * self.thrustMagnitude
+            self.thrustVector = Vector(0,0)
+            self.outOfFuel = True
+        print(self.fuelMass)
     
+
+
     def updateDirection(self):
         self.directionVector = Vector(math.cos(self.angle), math.sin(self.angle)) 
 

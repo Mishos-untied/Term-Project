@@ -20,29 +20,37 @@ def restartSim(app):
     app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.paused = False
     app.zoomedIn = False
+
     app.drawTrails = False
     app.tracerStep = 10
-    app.G = 1
-    app.dt = 0.01
     app.trailCutoffConstant = 5
     app.cameraMoveStep = 5
+
+    app.dt = 0.0001
+    app.scale = 1.3e-9
+
+    app.G = 6.67384e-11
 
 def setupGame(app):
     app.drawTrails = False
     Body.instances = []
+    
     sunRadius = 10
-    sunMass = 100000
-    planet1Radius = 4
-    planet1Mass = 200
-    planet2Radius = 3
-    planet2Mass = 10
-    planet3Radius = 3
-    planet3Mass = 15
+    sunMass = 1.9891e30 * app.scale
+    earthRadius = 4 
+    earthMass = 5.97219e24 * app.scale
+    earthSunDistance = 1.5e11 * app.scale
+    earthVelocity = 29.78e3 * app.scale * 7.5e8
+    moonRadius = 2
+    moonMass = 7.34767e22 * app.scale
+    moonEarthDistance = 382500 * app.scale
+    moonVelocity = 1023 * app.scale * 2e10 
+    rocketMass = 28801 * app.scale
+    rocketEarthDistance = 150000 * app.scale *100000
     app.sun1 = Body(position=Vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=Vector(0,0), color='gold', name='sun')
-    app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red', name='mars')
-    app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='venus')
-    app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='earth')
-    app.rocket = Rocket(position=Vector(app.width//2, 300), radius=4, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
+    app.earth = Body(position=Vector(app.width//2, app.height//2 + earthSunDistance), radius=earthRadius, mass=earthMass, velocity=Vector(earthVelocity,0), color='blue', name='earth')
+    app.moon = Body(position=Vector(app.width//2,app.height//2 + earthSunDistance + moonEarthDistance), radius=moonRadius, mass=moonMass, velocity=Vector(moonVelocity,0), color='grey', name='moon')
+    app.rocket = Rocket(position=Vector(app.width//2, app.height//2 + earthSunDistance + rocketEarthDistance), radius=1, mass=rocketMass, velocity=Vector(earthVelocity,0),color='grey', name='rocket')
 
 def rectanglesOverlap(left1, top1, width1, height1,
                       left2, top2, width2, height2): #slightly modified version of my own code
@@ -90,9 +98,9 @@ def redrawAll(app):
         displayLoadingScreenText(app)
     if not app.showLoadingScreen:
         drawRect(app.width-50, 25, 25, 50, border='white', fill=None)
-        thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
-        if thrustHeight > 0:
-            drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
+        thrustHeight = 50 * app.rocket.thrustMagnitude / app.rocket.maxThrust
+        if thrustHeight > 1:
+            drawRect(app.width-50, int(25+(50-thrustHeight)), 25, thrustHeight, fill='white')
     if app.paused and not app.zoomedIn:
         displayFullscreen(app)
 
@@ -176,16 +184,20 @@ def mainGameKeyHold(app, keys):
             app.screen[0] -= 2
         if 'd' in keys and app.screen[0] < app.width:
             app.screen[0] += 2
+    tenPercent = app.rocket.maxThrust / 10
     if 'up' in keys and 'down' not in keys:
-        app.rocket.thrustMagnitude += 3
+        #increase thrust 10% 
+        app.rocket.thrustMagnitude += tenPercent
     if 'down' in keys and 'up' not in keys:
-        app.rocket.thrustMagnitude -= 3
+        #decrease thrust 10% 
+        app.rocket.thrustMagnitude -= tenPercent
     if 'left' in keys and 'right' not in keys:
         app.rocket.angle -= math.pi / 60
         app.rocket.updateDirection()
     if 'right' in keys and 'left' not in keys:
         app.rocket.angle += math.pi / 60
         app.rocket.updateDirection()
+    print(app.rocket.thrustMagnitude)
     app.rocket.updateThrust()
         
 def takeStep(app):
@@ -193,7 +205,6 @@ def takeStep(app):
         app.screen[0] = app.rocket.position.x
         app.screen[1] = app.rocket.position.y
     
-
     # compute net gravitational forces acting on each body
     for cBod in Body.instances:
         cBod.netForceFelt = Vector(0,0)
@@ -212,8 +223,10 @@ def takeStep(app):
                 cBod2.netForceFelt += Fg
 
     if app.showLoadingScreen == False:
-    #add rocket thrust
+        #add rocket thrust
         app.rocket.netForceFelt += app.rocket.thrustVector
+        #update amount of propellant left and rocket mass
+        app.rocket.updatePropellant()
 
     #update momentums using net force
     for cBod in Body.instances:
@@ -226,6 +239,7 @@ def takeStep(app):
             cBod.previousPositions.pop(0)
         
         cBod.position = cBod.position + (cBod.momentum/cBod.mass)*app.dt
+    
 
 def onStep(app):
     if not app.paused:
