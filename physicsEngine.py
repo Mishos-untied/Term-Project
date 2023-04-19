@@ -108,6 +108,14 @@ def redrawAll(app):
             drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
         drawCircle(app.width-100, 50, 25, border='white')
         drawCircle(app.width-100, 50, 5, fill='white')
+        velocity = app.rocket.getVelocity()
+        if velocity > 100:
+            extraAngle = 3 * math.pi / 2
+        else:
+            extraAngle = (3 * math.pi /2)  * (velocity / 100)
+        lineFinalX = (app.width-100) + 25*math.cos(2*math.pi / 3 + extraAngle)
+        lineFinalY = 50 + 25*math.sin(2 * math.pi / 3 + extraAngle)
+        drawLine(app.width-100, 50, lineFinalX, lineFinalY, fill='white')
     if app.paused and not app.zoomedIn:
         displayFullscreen(app)
     if app.gameOver:

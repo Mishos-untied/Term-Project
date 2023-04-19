@@ -78,7 +78,7 @@ class Rocket(Body):
         self.directionVector = Vector(math.cos(self.angle), math.sin(self.angle)) 
     
     def getVelocity(self):
-        return (self.velocity.x**2 + self.velocity.y**2) ** 0.5
+        return self.thrustMagnitude
     
         
 
