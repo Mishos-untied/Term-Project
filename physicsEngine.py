@@ -1,11 +1,13 @@
 #Current lines: 548, target: 1200, progress; 45.67%
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket, Projectile
+from Drawings import drawCSM, drawLander
 import math
 
 def onAppStart(app):
     app.showLoadingScreen = True
-    app.runSurfaceEngine = False
+    app.runTakeoff = False
+    app.runLanding = False
     restartSim(app)
     loadingScreenSim(app)
 
@@ -39,7 +41,7 @@ def setupGameOver(app):
 def onSurfaceEngineStart(app):
     app.dt = 0.07
     app.g = Vector(0,-9.8)
-    app.p1 = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 200, burnTime = 10000)
+    app.rocket = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 200, burnTime = 10000)
 
 
 def setupGame(app):
@@ -88,8 +90,10 @@ def distance(x1, y1, x2, y2):
     return ((x2-x1)**2 + (y2-y1)**2)**0.5
 
 def redrawAll(app):
-    if app.runSurfaceEngine:
+    if app.runTakeoff:
         redrawSurfaceEngine(app)
+    elif app.runLanding:
+        redrawLanding(app)
     else:
         drawRect(0,0,app.width,app.height, fill='black')
         scale = app.width // app.screen[2]
@@ -148,10 +152,15 @@ def redrawAll(app):
             drawGameOverScreen(app)
 
 def redrawSurfaceEngine(app):
-    rocketPosition = scalePosition(app.p1.position)
-    drawRect(0,app.height-20,app.width,app.height,fill='green')
-    drawRect(rocketPosition.x, rocketPosition.y, 5, 15, fill = 'black', rotateAngle = 90 - app.p1.angle)
-    drawLabel(f'Altitude: {rounded(app.p1.altitude)} meters',80,40)
+    rocketPosition = scalePosition(app.rocket.position)
+    drawRect(-app.width*5,app.height-20,app.width*15,app.height*20,fill='darkOliveGreen')
+    drawCSM(app, height=50, engineOn=True)
+    drawLabel(f'Altitude: {rounded(app.rocket.altitude)} meters',80,40)
+
+def redrawLanding(app):
+    drawRect(-app.width*5,app.height-20,app.width*15,app.height*20,fill='darkOliveGreen')
+    drawLander(app, height=50)
+    drawLabel(f'Altitude: {rounded(app.rocket.altitude)} meters', 80, 40)
 
 def drawGameOverScreen(app):
     squareWidth = 280
@@ -249,12 +258,12 @@ def loadingScreenMousePress(app, mouseX, mouseY):
     else:
         if (app.width//2 - 100) <= mouseX <= (app.width // 2 + 100):
             if 200 <= mouseY <= 250:
-                app.runSurfaceEngine = True
+                app.runTakeoff = True
                 onSurfaceEngineStart(app)
             elif 300 <= mouseY <= 350:
                 setupGame(app)
             elif 400 <= mouseY <= 450:
-                app.runSurfaceEngine = True
+                app.runLanding = True
                 onSurfaceEngineStart(app)
                 
             
@@ -302,20 +311,20 @@ def mainGameKeyPress(app, key):
 def onKeyHold(app, keys):
     if not app.showLoadingScreen and not app.gameOver:
         mainGameKeyHold(app, keys)
-    elif app.runSurfaceEngine:
+    elif app.runTakeoff:
         rocketKeyHold(app, keys)
 
 def rocketKeyHold(app, keys):
     if 'left' in keys:
-        app.p1.angle += 5
+        app.rocket.angle += 5
     if 'right' in keys:
-        app.p1.angle -= 5
-    app.p1.updateDirection()
+        app.rocket.angle -= 5
+    app.rocket.updateDirection()
 
     if 'down' in keys:
-        app.p1.thrust -= 10
+        app.rocket.thrust -= 10
     if 'up' in keys:
-        app.p1.thrust += 10
+        app.rocket.thrust += 10
 
 def mainGameKeyHold(app, keys):
     if app.screen[2] == 100:
@@ -340,7 +349,7 @@ def mainGameKeyHold(app, keys):
     app.rocket.updateThrust()
 
 def takeStep(app):
-    if app.runSurfaceEngine:
+    if app.runTakeoff:
         takeStepForSurfaceEngine(app)
     else:
         mainTakeStep(app)
@@ -398,30 +407,30 @@ def mainTakeStep(app):
         cBod.updateVelocity()
 
 def takeStepForSurfaceEngine(app):
-    Fg = app.g * app.p1.mass
+    Fg = app.g * app.rocket.mass
     
-    if (app.p1.thrust > 0) and (app.p1.velocity.y > 0): #for now, only worry about drag if rocket is ascending or in powered descent
+    if (app.rocket.thrust > 0) and (app.rocket.velocity.y > 0): #for now, only worry about drag if rocket is ascending or in powered descent
         H = 8000 # "scale height"
         p0 = 1.225 # air density at sea level 
-        p = p0 * math.e ** (-app.p1.altitude / H) #air density at current altitude
-        Fd =  (app.p1.directionVector * (-1) * ((1/2) * p * (app.p1.velocity.mag**2) * app.p1.crossSectionalArea * app.p1.Cd)).roundVector(1)
+        p = p0 * math.e ** (-app.rocket.altitude / H) #air density at current altitude
+        Fd =  (app.rocket.directionVector * (-1) * ((1/2) * p * (app.rocket.velocity.mag**2) * app.rocket.crossSectionalArea * app.rocket.Cd)).roundVector(1)
     else: # figure out falling back down drag force later
        Fd = Vector(0,0)
 
-    if app.p1.burnTime > 0:
-        Ft = app.p1.directionVector * app.p1.thrust
-        app.p1.burnTime -= 1
-    elif app.p1.burnTime == 0:
-        app.p1.thrust = 0
+    if app.rocket.burnTime > 0:
+        Ft = app.rocket.directionVector * app.rocket.thrust
+        app.rocket.burnTime -= 1
+    elif app.rocket.burnTime == 0:
+        app.rocket.thrust = 0
         Ft = Vector(0,0)
 
-    app.p1.netForceFelt = Fg + Fd + Ft 
+    app.rocket.netForceFelt = Fg + Fd + Ft 
     #update momentum using net force
-    app.p1.momentum = app.p1.momentum + (app.p1.netForceFelt * app.dt)
-    app.p1.velocity = app.p1.momentum / app.p1.mass
-    deltaPosition = (app.p1.momentum/app.p1.mass)*app.dt
-    app.p1.position = app.p1.position - deltaPosition
-    app.p1.altitude += deltaPosition.y
+    app.rocket.momentum = app.rocket.momentum + (app.rocket.netForceFelt * app.dt)
+    app.rocket.velocity = app.rocket.momentum / app.rocket.mass
+    deltaPosition = (app.rocket.momentum/app.rocket.mass)*app.dt
+    app.rocket.position = app.rocket.position - deltaPosition
+    app.rocket.altitude += deltaPosition.y
 
 def onStep(app):
     if not app.showLoadingScreen:
