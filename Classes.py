@@ -1,3 +1,4 @@
+from cmu_graphics import *
 import math
 
 class Vector:
@@ -32,6 +33,12 @@ class Vector:
                 raise TypeError('Can only divide a vector with a scalar')
             elif (isinstance(other, float) or isinstance(other,int)):
                 return (self * (1 / other))
+        
+        def roundVector(self, decimalPlaces):
+            x = pythonRound(self.x,decimalPlaces)
+            y = pythonRound(self.y,decimalPlaces)
+            return Vector(x, y)
+
 class Body:
         instances = []
         def __init__(self, position, radius, mass, velocity, color, name=None):
@@ -51,6 +58,30 @@ class Body:
         
         def __eq__(self, other):
             return isinstance(other, Body) and self.name == other.name
+
+class Projectile:
+    def __init__(self, position, mass, angle, Cd, crossSectionalArea, velocity, thrust, burnTime):
+        self.position = position
+        self.mass = mass 
+        self.velocity = velocity
+        self.momentum = velocity * mass
+        self.netForceFelt = Vector(0,0)
+        self.burnTime = burnTime
+        self.altitude = 0
+
+        self.thrust = thrust
+        self.angle = angle
+        self.crossSectionalArea = crossSectionalArea
+        self.Cd = Cd
+        self.directionVector = Vector(-math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle)))
+
+        
+    
+    def updateDirection(self):
+        self.directionVector = Vector(-math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle)))
+    
+
+
 class Rocket(Body):
     maxThrust = 200
     def __init__(self, position, radius, mass, velocity, color, angle=0, name=None):
