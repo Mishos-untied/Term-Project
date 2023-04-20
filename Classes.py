@@ -47,8 +47,10 @@ class Body:
             if name != None:
                 self.name = name
             else:
-                self.name = Body.instances.index(self)
-
+                self.name = str(Body.instances.index(self))
+        
+        def __eq__(self, other):
+            return isinstance(other, Body) and self.name == other.name
 class Rocket(Body):
     maxThrust = 200
     def __init__(self, position, radius, mass, velocity, color, angle=0, name=None):
