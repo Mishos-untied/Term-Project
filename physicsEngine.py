@@ -13,11 +13,12 @@ def loadingScreenSim(app):
     app.drawTrails = True
     sunMass = 100000
     sunRadius = 10
-    app.sun1 = Body(Vector(300, 300), sunRadius, sunMass, Vector(10, -20), 'red')
-    app.sun2 = Body(Vector(500, 300), sunRadius, sunMass, Vector(-20, 5), 'orange')
-    app.sun3 = Body(Vector(400, 350), sunRadius, sunMass, Vector(10, 25), 'yellow')
+    app.sun1 = Body(Vector(300, 300), sunRadius, sunMass, Vector(10, -20), 'red', name='1')
+    app.sun2 = Body(Vector(500, 300), sunRadius, sunMass, Vector(-20, 5), 'orange', name='2')
+    app.sun3 = Body(Vector(400, 350), sunRadius, sunMass, Vector(10, 25), 'yellow', name='3')
 
 def restartSim(app):
+    app.showStats = False
     app.showSettings = False
     app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.paused = False
@@ -37,6 +38,7 @@ def setupGameOver(app):
 
 
 def setupGame(app):
+    app.showStats = True
     app.step = 1
     app.showLoadingScreen = False
     app.showSettings = False
@@ -69,6 +71,9 @@ def rectanglesOverlap(left1, top1, width1, height1,
         if bottom2 >= bottom1 >= top2 or bottom1 >= bottom2 >= top1:
             return True
     return False
+
+def distance(x1, y1, x2, y2):
+    return ((x2-x1)**2 + (y2-y1)**2)**0.5
 
 def redrawAll(app):
     drawRect(0,0,app.width,app.height)
@@ -104,6 +109,7 @@ def redrawAll(app):
     if app.showLoadingScreen:
         displayLoadingScreenText(app)
     if not app.showLoadingScreen and not app.gameOver:
+        nearest = findNearestBody(app.rocket)
         drawRect(app.width-50, 25, 25, 50, border='white', fill=None)
         thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
         if thrustHeight > 0:
@@ -118,7 +124,10 @@ def redrawAll(app):
         lineFinalX = (app.width-100) + 25*math.cos(2*math.pi / 3 + extraAngle)
         lineFinalY = 50 + 25*math.sin(2 * math.pi / 3 + extraAngle)
         drawLine(app.width-100, 50, lineFinalX, lineFinalY, fill='white')
-    if not app.zoomedIn and not app.showLoadingScreen:
+        drawLabel(f'x: {int(app.rocket.position.x)}', app.width-150, 25, font='monospace', fill='white', align='right')
+        drawLabel(f'y: {int(app.rocket.position.y)}', app.width-150, 50, font='monospace', fill='white', align='right')
+        drawLabel(f'nearestBody: {nearest}', app.width-150, 75, font='monospace', fill='white', align='right')
+    if not app.zoomedIn and app.showStats:
         displayFullscreen(app)
     if app.gameOver:
         drawGameOverScreen(app)
@@ -185,6 +194,18 @@ def displayLoadingScreenText(app):
         drawLabel('Stage 3: Landing', app.width//2, 425, fill='white', font='monospace', size=19)
 
 
+def findNearestBody(cBody):
+    nearest = float('inf')
+    best = None
+    for entity in Body.instances:
+        if entity != cBody:
+            currentDistance = distance(cBody.position.x, cBody.position.y,
+                                       entity.position.x, entity.position.y)
+            if currentDistance < nearest:
+                nearest = currentDistance
+                best = entity
+    return best.name
+
 def onMousePress(app, mouseX, mouseY):
     if not app.gameOver:
         if not app.showLoadingScreen:
@@ -230,6 +251,9 @@ def onKeyPress(app, key):
         mainGameKeyPress(app, key)
 
 def mainGameKeyPress(app, key):
+    if key == 'i':
+        app.showStats = not app.showStats
+        app.step = 1
     if key == 'p':
         app.paused = not app.paused
     if key == 't':
@@ -274,7 +298,7 @@ def mainGameKeyHold(app, keys):
         app.rocket.angle += math.pi / 60
         app.rocket.updateDirection()
     app.rocket.updateThrust()
-        
+
 def takeStep(app):
     if app.zoomedIn and not app.paused:
         app.screen[0] = app.rocket.position.x

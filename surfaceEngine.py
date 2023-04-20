@@ -91,14 +91,6 @@ def scalePosition(unscaledPosition):
     scaledPosition = Vector(newX,newY)
     return scaledPosition
 
-def onMousePress(app, mouseX, mouseY):
-    pass
-
-
-def onKeyPress(app, key):
-   pass
-
-
 def onKeyHold(app, keys):
     if 'left' in keys:
         app.p1.angle += 5
@@ -151,4 +143,4 @@ def onStep(app):
 def runSurfaceEngine():
     runApp(width=700, height=700)
 
-# runSurfaceEngine()
+runSurfaceEngine()
