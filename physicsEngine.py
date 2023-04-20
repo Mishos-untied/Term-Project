@@ -1,11 +1,11 @@
 #Current lines: 387, target: 1500, progress; 25.80%
 from cmu_graphics import *
-from Classes import Vector, Body, Rocket
-from surfaceEngine import runSurfaceEngine, runApp
+from Classes import Vector, Body, Rocket, Projectile
 import math
 
 def onAppStart(app):
     app.showLoadingScreen = True
+    app.runSurfaceEngine = False
     restartSim(app)
     loadingScreenSim(app)
 
@@ -36,6 +36,11 @@ def setupGameOver(app):
     app.drawTrails = False
     app.step = 1
 
+def onSurfaceEngineStart(app):
+    app.dt = 0.07
+    app.g = Vector(0,-9.8)
+    app.p1 = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 200, burnTime = 10000)
+
 
 def setupGame(app):
     app.showStats = True
@@ -61,6 +66,13 @@ def setupGame(app):
     app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='venus')
     app.rocket = Rocket(position=Vector(app.width//2, 500), radius=2, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
 
+def scalePosition(unscaledPosition):
+    scale = 1
+    newX = unscaledPosition.x / scale
+    newY = unscaledPosition.y / scale
+    scaledPosition = Vector(newX,newY)
+    return scaledPosition
+
 def rectanglesOverlap(left1, top1, width1, height1,
                       left2, top2, width2, height2): #slightly modified version of my own code
     right1 = left1 + width1  #got this from:https://cs3-112-f22.academy.cs.cmu.edu/exercise/4581
@@ -76,61 +88,70 @@ def distance(x1, y1, x2, y2):
     return ((x2-x1)**2 + (y2-y1)**2)**0.5
 
 def redrawAll(app):
-    drawRect(0,0,app.width,app.height)
-    scale = app.width // app.screen[2]
-    boxX = app.screen[0] - app.screen[2] // 2
-    boxY = app.screen[1] - app.screen[3]//2
-    for cBody in Body.instances:
-        cBodyLeft = cBody.position.x - cBody.radius
-        cBodyTop = cBody.position.y - cBody.radius
-        if rectanglesOverlap(boxX, boxY, app.screen[2], app.screen[3],
-                            cBodyLeft, cBodyTop, cBody.radius*2, cBody.radius*2):
-            if isinstance(cBody, Rocket):
-                x1 = (cBody.position.x - boxX) * scale + 10 
-                y1 = (cBody.position.y - boxY) * scale
-                x2 = x3 = (cBody.position.x - boxX) * scale - 5 
-                y2 = y1 - 5
-                y3 = y1 + 5
-                angle = cBody.angle * (180 / math.pi)
-                drawPolygon(x1, y1, x2, y2, x3, y3, fill='white', rotateAngle=angle)
+    if app.runSurfaceEngine:
+        redrawSurfaceEngine(app)
+    else:
+        drawRect(0,0,app.width,app.height, fill='black')
+        scale = app.width // app.screen[2]
+        boxX = app.screen[0] - app.screen[2] // 2
+        boxY = app.screen[1] - app.screen[3]//2
+        for cBody in Body.instances:
+            cBodyLeft = cBody.position.x - cBody.radius
+            cBodyTop = cBody.position.y - cBody.radius
+            if rectanglesOverlap(boxX, boxY, app.screen[2], app.screen[3],
+                                cBodyLeft, cBodyTop, cBody.radius*2, cBody.radius*2):
+                if isinstance(cBody, Rocket):
+                    x1 = (cBody.position.x - boxX) * scale + 10 
+                    y1 = (cBody.position.y - boxY) * scale
+                    x2 = x3 = (cBody.position.x - boxX) * scale - 5 
+                    y2 = y1 - 5
+                    y3 = y1 + 5
+                    angle = cBody.angle * (180 / math.pi)
+                    drawPolygon(x1, y1, x2, y2, x3, y3, fill='white', rotateAngle=angle)
+                else:
+                    xPos = (cBody.position.x - boxX) * scale 
+                    yPos = (cBody.position.y - boxY) * scale
+                    drawCircle(xPos, yPos, cBody.radius*scale, fill = cBody.color)
+            if app.drawTrails == True:
+                for i in range(1,len(cBody.previousPositions), app.tracerStep):
+                    pos1 = cBody.previousPositions[i-1]
+                    pos2 = cBody.previousPositions[i] 
+                    x1 = (pos1.x - boxX) * scale
+                    y1 = (pos1.y - boxY) * scale
+                    x2 = (pos2.x - boxX) * scale
+                    y2 = (pos2.y - boxY) * scale
+                    drawLine(x1, y1, x2, y2, fill = 'white')
+        if app.showLoadingScreen:
+            displayLoadingScreenText(app)
+        if not app.showLoadingScreen and not app.gameOver:
+            nearest = findNearestBody(app.rocket)
+            drawRect(app.width-50, 25, 25, 50, border='white', fill=None)
+            thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
+            if thrustHeight > 0:
+                drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
+            drawCircle(app.width-100, 50, 25, border='white')
+            drawCircle(app.width-100, 50, 5, fill='white')
+            velocity = app.rocket.getVelocity()
+            if velocity > 100:
+                extraAngle = 3 * math.pi / 2
             else:
-                xPos = (cBody.position.x - boxX) * scale 
-                yPos = (cBody.position.y - boxY) * scale
-                drawCircle(xPos, yPos, cBody.radius*scale, fill = cBody.color)
-        if app.drawTrails == True:
-            for i in range(1,len(cBody.previousPositions), app.tracerStep):
-                pos1 = cBody.previousPositions[i-1]
-                pos2 = cBody.previousPositions[i] 
-                x1 = (pos1.x - boxX) * scale
-                y1 = (pos1.y - boxY) * scale
-                x2 = (pos2.x - boxX) * scale
-                y2 = (pos2.y - boxY) * scale
-                drawLine(x1, y1, x2, y2, fill = 'white')
-    if app.showLoadingScreen:
-        displayLoadingScreenText(app)
-    if not app.showLoadingScreen and not app.gameOver:
-        nearest = findNearestBody(app.rocket)
-        drawRect(app.width-50, 25, 25, 50, border='white', fill=None)
-        thrustHeight = 50 * app.rocket.thrustMagnitude / Rocket.maxThrust
-        if thrustHeight > 0:
-            drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
-        drawCircle(app.width-100, 50, 25, border='white')
-        drawCircle(app.width-100, 50, 5, fill='white')
-        velocity = app.rocket.getVelocity()
-        if velocity > 100:
-            extraAngle = 3 * math.pi / 2
-        else:
-            extraAngle = (3 * math.pi /2)  * (velocity / 100)
-        lineFinalX = (app.width-100) + 25*math.cos(2*math.pi / 3 + extraAngle)
-        lineFinalY = 50 + 25*math.sin(2 * math.pi / 3 + extraAngle)
-        drawLine(app.width-100, 50, lineFinalX, lineFinalY, fill='white')
-        drawLabel(f'x: {int(app.rocket.position.x)}', app.width-150, 25, font='monospace', fill='white', align='right')
-        drawLabel(f'y: {int(app.rocket.position.y)}', app.width-150, 50, font='monospace', fill='white', align='right')
-        drawLabel(f'nearestBody: {nearest}', app.width-150, 75, font='monospace', fill='white', align='right')
-    if not app.zoomedIn and app.showStats:
-        displayFullscreen(app)
-    if app.gameOver:
-        drawGameOverScreen(app)
+                extraAngle = (3 * math.pi /2)  * (velocity / 100)
+            lineFinalX = (app.width-100) + 25*math.cos(2*math.pi / 3 + extraAngle)
+            lineFinalY = 50 + 25*math.sin(2 * math.pi / 3 + extraAngle)
+            drawLine(app.width-100, 50, lineFinalX, lineFinalY, fill='white')
+            drawLabel(f'x: {int(app.rocket.position.x)}', app.width-150, 25, font='monospace', fill='white', align='right')
+            drawLabel(f'y: {int(app.rocket.position.y)}', app.width-150, 50, font='monospace', fill='white', align='right')
+            drawLabel(f'nearestBody: {nearest}', app.width-150, 75, font='monospace', fill='white', align='right')
+        if not app.zoomedIn and app.showStats:
+            displayFullscreen(app)
+        if app.gameOver:
+            drawGameOverScreen(app)
+
+def redrawSurfaceEngine(app):
+    rocketPosition = scalePosition(app.p1.position)
+    drawRect(0,app.height-20,app.width,app.height,fill='green')
+    drawRect(rocketPosition.x, rocketPosition.y, 5, 15, fill = 'black', rotateAngle = 90 - app.p1.angle)
+    drawLabel(f'Altitude: {rounded(app.p1.altitude)} meters',80,40)
 
 def drawGameOverScreen(app):
     squareWidth = 280
@@ -228,9 +249,13 @@ def loadingScreenMousePress(app, mouseX, mouseY):
     else:
         if (app.width//2 - 100) <= mouseX <= (app.width // 2 + 100):
             if 200 <= mouseY <= 250:
-                runSurfaceEngine()
+                app.runSurfaceEngine = True
+                onSurfaceEngineStart(app)
             elif 300 <= mouseY <= 350:
                 setupGame(app)
+            elif 400 <= mouseY <= 450:
+                app.runSurfaceEngine = True
+                onSurfaceEngineStart(app)
                 
             
 
@@ -273,9 +298,24 @@ def mainGameKeyPress(app, key):
             app.zoomedIn = False
 
 
+
 def onKeyHold(app, keys):
     if not app.showLoadingScreen and not app.gameOver:
         mainGameKeyHold(app, keys)
+    elif app.runSurfaceEngine:
+        rocketKeyHold(app, keys)
+
+def rocketKeyHold(app, keys):
+    if 'left' in keys:
+        app.p1.angle += 5
+    if 'right' in keys:
+        app.p1.angle -= 5
+    app.p1.updateDirection()
+
+    if 'down' in keys:
+        app.p1.thrust -= 10
+    if 'up' in keys:
+        app.p1.thrust += 10
 
 def mainGameKeyHold(app, keys):
     if app.screen[2] == 100:
@@ -300,6 +340,12 @@ def mainGameKeyHold(app, keys):
     app.rocket.updateThrust()
 
 def takeStep(app):
+    if app.runSurfaceEngine:
+        takeStepForSurfaceEngine(app)
+    else:
+        mainTakeStep(app)
+
+def mainTakeStep(app):
     if app.zoomedIn and not app.paused:
         app.screen[0] = app.rocket.position.x
         app.screen[1] = app.rocket.position.y
@@ -349,6 +395,34 @@ def takeStep(app):
             cBod.previousPositions.pop(0)
         
         cBod.position = cBod.position + (cBod.momentum/cBod.mass)*app.dt
+
+def takeStepForSurfaceEngine(app):
+    Fg = app.g * app.p1.mass
+    
+    if (app.p1.thrust > 0) and (app.p1.velocity.y > 0): #for now, only worry about drag if rocket is ascending or in powered descent
+        H = 8000 # "scale height"
+        p0 = 1.225 # air density at sea level 
+        p = p0 * math.e ** (-app.p1.altitude / H) #air density at current altitude
+        Fd =  (app.p1.directionVector * (-1) * ((1/2) * p * (app.p1.velocity.mag**2) * app.p1.crossSectionalArea * app.p1.Cd)).roundVector(1)
+    else: # figure out falling back down drag force later
+       Fd = Vector(0,0)
+
+    print(f'Fd: {Fd}')
+    print(f'Fg: {Fg}')
+    if app.p1.burnTime > 0:
+        Ft = app.p1.directionVector * app.p1.thrust
+        app.p1.burnTime -= 1
+    elif app.p1.burnTime == 0:
+        app.p1.thrust = 0
+        Ft = Vector(0,0)
+
+    app.p1.netForceFelt = Fg + Fd + Ft 
+    #update momentum using net force
+    app.p1.momentum = app.p1.momentum + (app.p1.netForceFelt * app.dt)
+    app.p1.velocity = app.p1.momentum / app.p1.mass
+    deltaPosition = (app.p1.momentum/app.p1.mass)*app.dt
+    app.p1.position = app.p1.position - deltaPosition
+    app.p1.altitude += deltaPosition.y
 
 def onStep(app):
     if not app.showLoadingScreen:
