@@ -1,6 +1,7 @@
 #Current lines: 387, target: 1500, progress; 25.80%
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket
+from surfaceEngine import runSurfaceEngine, runApp
 import math
 
 def onAppStart(app):
@@ -205,7 +206,9 @@ def loadingScreenMousePress(app, mouseX, mouseY):
                 app.showSettings = True
     else:
         if (app.width//2 - 100) <= mouseX <= (app.width // 2 + 100):
-            if 300 <= mouseY <= 350:
+            if 200 <= mouseY <= 250:
+                runSurfaceEngine()
+            elif 300 <= mouseY <= 350:
                 setupGame(app)
                 
             
