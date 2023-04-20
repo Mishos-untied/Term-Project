@@ -1,4 +1,4 @@
-#Current lines: 387, target: 1500, progress; 25.80%
+#Current lines: 548, target: 1200, progress; 45.67%
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket, Projectile
 import math
@@ -131,8 +131,8 @@ def redrawAll(app):
                 drawRect(app.width-50, 25+(50-thrustHeight), 25, thrustHeight, fill='white')
             drawCircle(app.width-100, 50, 25, border='white')
             drawCircle(app.width-100, 50, 5, fill='white')
-            velocity = app.rocket.getVelocity()
-            if velocity > 100:
+            velocity = app.rocket.getVelocityMagnitude()
+            if velocity > 50:
                 extraAngle = 3 * math.pi / 2
             else:
                 extraAngle = (3 * math.pi /2)  * (velocity / 100)
@@ -395,6 +395,7 @@ def mainTakeStep(app):
             cBod.previousPositions.pop(0)
         
         cBod.position = cBod.position + (cBod.momentum/cBod.mass)*app.dt
+        cBod.updateVelocity()
 
 def takeStepForSurfaceEngine(app):
     Fg = app.g * app.p1.mass
@@ -407,8 +408,6 @@ def takeStepForSurfaceEngine(app):
     else: # figure out falling back down drag force later
        Fd = Vector(0,0)
 
-    print(f'Fd: {Fd}')
-    print(f'Fg: {Fg}')
     if app.p1.burnTime > 0:
         Ft = app.p1.directionVector * app.p1.thrust
         app.p1.burnTime -= 1

@@ -58,6 +58,9 @@ class Body:
         
         def __eq__(self, other):
             return isinstance(other, Body) and self.name == other.name
+        
+        def updateVelocity(self):
+            self.velocity = self.momentum / self.mass
 
 class Projectile:
     def __init__(self, position, mass, angle, Cd, crossSectionalArea, velocity, thrust, burnTime):
@@ -106,12 +109,12 @@ class Rocket(Body):
         elif self.thrustMagnitude < 0:
             self.thrustMagnitude = 0
         self.thrustVector = self.directionVector * self.thrustMagnitude
-    
+        
     def updateDirection(self):
         self.directionVector = Vector(math.cos(self.angle), math.sin(self.angle)) 
     
-    def getVelocity(self):
-        return self.thrustMagnitude
+    def getVelocityMagnitude(self):
+        return (self.velocity.x ** 2 + self.velocity.y ** 2) ** 0.5
     
         
 
