@@ -428,7 +428,10 @@ def takeStepForSurfaceEngine(app):
     #update momentum using net force
     app.rocket.momentum = app.rocket.momentum + (app.rocket.netForceFelt * app.dt)
     app.rocket.velocity = app.rocket.momentum / app.rocket.mass
-    deltaPosition = (app.rocket.momentum/app.rocket.mass)*app.dt
+    if app.rocket.altitude >= 0:
+        deltaPosition = (app.rocket.momentum/app.rocket.mass)*app.dt
+    else:
+        deltaPosition = Vector(0,0)
     app.rocket.position = app.rocket.position - deltaPosition
     app.rocket.altitude += deltaPosition.y
 
