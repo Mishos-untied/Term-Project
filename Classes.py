@@ -62,7 +62,7 @@ class Body:
         def updateVelocity(self):
             self.velocity = self.momentum / self.mass
 
-class Projectile:
+class Projectile(Body):
     def __init__(self, position, mass, angle, Cd, crossSectionalArea, velocity, thrust, burnTime):
         self.position = position
         self.mass = mass 

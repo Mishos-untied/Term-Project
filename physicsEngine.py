@@ -34,6 +34,7 @@ def restartSim(app):
     app.gameOver = False
 
 def setupGameOver(app):
+    app.runTakeoff = app.runLanding = app.showLoadingScreen = False
     Body.instances = []
     app.drawTrails = False
     app.step = 1
@@ -45,6 +46,8 @@ def onSurfaceEngineStart(app):
 
 
 def setupGame(app):
+    app.dt = 0.01
+    app.runLander = app.runTakeoff = False
     app.showStats = True
     app.step = 1
     app.showLoadingScreen = False
@@ -90,10 +93,22 @@ def distance(x1, y1, x2, y2):
     return ((x2-x1)**2 + (y2-y1)**2)**0.5
 
 def redrawAll(app):
-    if app.runTakeoff:
-        redrawSurfaceEngine(app)
-    elif app.runLanding:
-        redrawLanding(app)
+    boxX = app.screen[0] - app.screen[2] // 2
+    boxY = app.screen[1] - app.screen[3]//2
+    if app.runTakeoff or app.runLanding:
+        if app.rocket.altitude < app.height//2:
+            app.screen[1] = app.height//2
+        else:
+            app.screen[1] = app.rocket.position.y
+        #app.screen[0] = app.rocket.position.x
+        drawRect((-app.width-boxX)*5,app.height-boxY-20,app.width*15,app.height*20,fill='darkOliveGreen')
+        drawRect((-app.width-boxX)*5, app.height-boxY-2820, app.width*15, app.height*4, fill=gradient('lightBlue', 'blue',
+                                                                                        'midnightblue', 'darkBlue', 'black', start='bottom'))
+        labelColor = 'white' if app.rocket.altitude > 1000 else 'black'
+        drawLabel(f'Altitude: {rounded(app.rocket.altitude)} meters', 80, 40, fill=labelColor)
+        redrawSurfaceEngine(app, boxX, boxY) if app.runTakeoff else redrawLanding(app, boxX, boxY)
+        if app.gameOver:
+            drawGameOverScreen(app)
     else:
         drawRect(0,0,app.width,app.height, fill='black')
         scale = app.width // app.screen[2]
@@ -151,16 +166,11 @@ def redrawAll(app):
         if app.gameOver:
             drawGameOverScreen(app)
 
-def redrawSurfaceEngine(app):
-    rocketPosition = scalePosition(app.rocket.position)
-    drawRect(-app.width*5,app.height-20,app.width*15,app.height*20,fill='darkOliveGreen')
-    drawCSM(app, height=50, engineOn=True)
-    drawLabel(f'Altitude: {rounded(app.rocket.altitude)} meters',80,40)
+def redrawSurfaceEngine(app, boxX, boxY):
+    drawCSM(app, height=50, dx=boxX, dy=boxY, engineOn=True)
 
-def redrawLanding(app):
-    drawRect(-app.width*5,app.height-20,app.width*15,app.height*20,fill='darkOliveGreen')
-    drawLander(app, height=50)
-    drawLabel(f'Altitude: {rounded(app.rocket.altitude)} meters', 80, 40)
+def redrawLanding(app, boxX, boxY):
+    drawLander(app, dx=boxX, dy=boxY, height=50)
 
 def drawGameOverScreen(app):
     squareWidth = 280
@@ -248,7 +258,11 @@ def onMousePress(app, mouseX, mouseY):
 def gameOverMousePress(app, mouseX, mouseY):
     if 301 <= mouseX <= 399:
         if 440 <= mouseY <= 460:
-            setupGame(app)
+            app.showLoadingScreen = True
+            app.runTakeoff = False
+            app.runLanding = False
+            restartSim(app)
+            loadingScreenSim(app)
 
 def loadingScreenMousePress(app, mouseX, mouseY):
     if not app.showSettings:
@@ -311,7 +325,7 @@ def mainGameKeyPress(app, key):
 def onKeyHold(app, keys):
     if not app.showLoadingScreen and not app.gameOver:
         mainGameKeyHold(app, keys)
-    elif app.runTakeoff:
+    elif app.runTakeoff or app.runLanding:
         rocketKeyHold(app, keys)
 
 def rocketKeyHold(app, keys):
@@ -349,9 +363,9 @@ def mainGameKeyHold(app, keys):
     app.rocket.updateThrust()
 
 def takeStep(app):
-    if app.runTakeoff:
+    if app.runTakeoff or app.runLanding:
         takeStepForSurfaceEngine(app)
-    else:
+    elif not app.gameOver:
         mainTakeStep(app)
 
 def mainTakeStep(app):
@@ -432,8 +446,15 @@ def takeStepForSurfaceEngine(app):
         deltaPosition = (app.rocket.momentum/app.rocket.mass)*app.dt
     else:
         deltaPosition = Vector(0,0)
+        app.gameOver = True
+        app.step = 1
+        setupGameOver(app)
     app.rocket.position = app.rocket.position - deltaPosition
     app.rocket.altitude += deltaPosition.y
+    if app.gameOver:
+        drawGameOverScreen(app)
+    if app.rocket.altitude > 2500:
+        setupGame(app)
 
 def onStep(app):
     if not app.showLoadingScreen:
