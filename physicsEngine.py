@@ -42,7 +42,7 @@ def setupGameOver(app):
 def onSurfaceEngineStart(app):
     app.dt = 0.07
     app.g = Vector(0,-9.8)
-    app.rocket = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 200, burnTime = 10000)
+    app.rocket = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 10000, health=200)
 
 
 def setupGame(app):
@@ -442,13 +442,13 @@ def takeStepForSurfaceEngine(app):
     #update momentum using net force
     app.rocket.momentum = app.rocket.momentum + (app.rocket.netForceFelt * app.dt)
     app.rocket.velocity = app.rocket.momentum / app.rocket.mass
-    if app.rocket.altitude >= 0:
-        deltaPosition = (app.rocket.momentum/app.rocket.mass)*app.dt
-    else:
-        deltaPosition = Vector(0,0)
-        app.gameOver = True
-        app.step = 1
-        setupGameOver(app)
+    deltaPosition = (app.rocket.momentum/app.rocket.mass)*app.dt
+    if app.rocket.altitude <= 0:
+        deltaPosition = Vector(0, 0) if deltaPosition.y < 0 else deltaPosition
+        if app.rocket.getVelocity() >= 100:
+            app.gameOver = True
+            app.step = 1
+            setupGameOver(app)
     app.rocket.position = app.rocket.position - deltaPosition
     app.rocket.altitude += deltaPosition.y
     if app.rocket.altitude > 2500:

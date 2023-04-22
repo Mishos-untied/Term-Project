@@ -62,8 +62,8 @@ class Body:
         def updateVelocity(self):
             self.velocity = self.momentum / self.mass
 
-class Projectile(Body):
-    def __init__(self, position, mass, angle, Cd, crossSectionalArea, velocity, thrust, burnTime):
+class Projectile:
+    def __init__(self, position, mass, angle, Cd, crossSectionalArea, velocity, thrust, burnTime, health):
         self.position = position
         self.mass = mass 
         self.velocity = velocity
@@ -71,14 +71,15 @@ class Projectile(Body):
         self.netForceFelt = Vector(0,0)
         self.burnTime = burnTime
         self.altitude = 0
-
+        self.health = health
         self.thrust = thrust
         self.angle = angle
         self.crossSectionalArea = crossSectionalArea
         self.Cd = Cd
         self.directionVector = Vector(-math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle)))
 
-        
+    def getVelocity(self):
+        return (self.velocity.x**2 + self.velocity.y **2) ** 0.5
     
     def updateDirection(self):
         self.directionVector = Vector(-math.cos(math.radians(self.angle)), math.sin(math.radians(self.angle)))
