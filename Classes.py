@@ -63,15 +63,14 @@ class Body:
             self.velocity = self.momentum / self.mass
 
 class Projectile:
-    def __init__(self, position, mass, angle, Cd, crossSectionalArea, velocity, thrust, burnTime, health):
+    def __init__(self, position, mass, angle, Cd, crossSectionalArea, velocity, thrust, burnTime, altitude):
         self.position = position
         self.mass = mass 
         self.velocity = velocity
         self.momentum = velocity * mass
         self.netForceFelt = Vector(0,0)
         self.burnTime = burnTime
-        self.altitude = 0
-        self.health = health
+        self.altitude = altitude
         self.thrust = thrust
         self.angle = angle
         self.crossSectionalArea = crossSectionalArea

@@ -42,12 +42,16 @@ def setupGameOver(app):
 def onSurfaceEngineStart(app):
     app.dt = 0.07
     app.g = Vector(0,-9.8)
-    app.rocket = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 10000, health=200)
+    if app.runTakeoff:
+        app.rocket = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 10000, altitude=0)
+    else:
+        app.rocket = Projectile(position=Vector(20, -1600), mass=7.257, angle=90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0, 0), thrust=50, burnTime=10000, altitude = 2300)
 
 
 def setupGame(app):
     app.dt = 0.01
-    app.runLander = app.runTakeoff = False
+    app.runLanding = False
+    app.runTakeoff = False
     app.showStats = True
     app.step = 1
     app.showLoadingScreen = False
@@ -451,7 +455,7 @@ def takeStepForSurfaceEngine(app):
             setupGameOver(app)
     app.rocket.position = app.rocket.position - deltaPosition
     app.rocket.altitude += deltaPosition.y
-    if app.rocket.altitude > 2500:
+    if app.rocket.altitude > 2300:
         setupGame(app)
 
 def onStep(app):
