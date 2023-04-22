@@ -1,4 +1,4 @@
-#Current lines: 548, target: 1200, progress; 45.67%
+#Current lines: 637, target: 1200, progress; 53.08%
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket, Projectile
 from Drawings import drawCSM, drawLander
@@ -451,8 +451,6 @@ def takeStepForSurfaceEngine(app):
         setupGameOver(app)
     app.rocket.position = app.rocket.position - deltaPosition
     app.rocket.altitude += deltaPosition.y
-    if app.gameOver:
-        drawGameOverScreen(app)
     if app.rocket.altitude > 2500:
         setupGame(app)
 
