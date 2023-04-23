@@ -1,4 +1,4 @@
-#Current lines: 637, target: 1200, progress; 53.08%
+#Current lines: 637, target: 1000
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket, Projectile
 from Drawings import drawCSM, drawLander
@@ -56,9 +56,8 @@ def setupGame(app):
     app.step = 1
     app.showLoadingScreen = False
     app.showSettings = False
-    app.zoomedIn = False
+    app.zoomedIn = True
     app.gameOver = False
-    app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.drawTrails = False
     Body.instances = []
     sunRadius = 10
@@ -71,9 +70,10 @@ def setupGame(app):
     planet3Mass = 15
     app.sun1 = Body(position=Vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=Vector(0,0), color='gold', name='sun')
     app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red', name='mars')
-    app.planet2 = Body(position=Vector(app.width//2,250), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='earth')
+    app.planet2 = Body(position=Vector(app.width//2,550), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='earth')
     app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='venus')
-    app.rocket = Rocket(position=Vector(app.width//2, 500), radius=2, mass=10, velocity=Vector(0,0),color='grey', name='rocket')
+    app.rocket = Rocket(position=Vector(app.width//2, 520), radius=2, mass=10, velocity=Vector(-18,0),color='grey', name='rocket')
+    app.screen = [app.rocket.position.x, app.rocket.position.y, 100, 100]
 
 def scalePosition(unscaledPosition):
     scale = 1
