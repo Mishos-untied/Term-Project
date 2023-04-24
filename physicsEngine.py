@@ -197,7 +197,7 @@ def drawTakeoffInstructions(app):
     
 def redrawSurfaceEngine(app, boxX, boxY):
     drawLaunchRocket(app,height=200, dx=boxX, dy=boxY, engineOn=False)
-
+    
 def redrawLanding(app, boxX, boxY):
     drawLander(app, dx=boxX, dy=boxY, height=50)
 
