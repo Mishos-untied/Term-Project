@@ -68,7 +68,7 @@ class Body:
             self.velocity = self.momentum / self.mass
 
 class Projectile:
-    def __init__(self, position, mass, angle, Cd, crossSectionalArea, velocity, thrust, burnTime, altitude):
+    def __init__(self, position, mass, angle, Cd, crossSectionalArea, velocity, thrust, altitude, burnTime=30000):
         self.position = position
         self.mass = mass 
         self.velocity = velocity
@@ -92,7 +92,7 @@ class Projectile:
 
 class Rocket(Body):
     maxThrust = 200
-    def __init__(self, position, radius, mass, velocity, color, angle=0, name=None):
+    def __init__(self, position, radius, mass, velocity, color, angle=0, name=None, burnTime=30000):
         self.rocketAngle = angle
         super().__init__(position, radius, mass, velocity, color, name)
         self.angle = 0
@@ -105,6 +105,7 @@ class Rocket(Body):
         elif self.thrustMagnitude < 0:
             self.thrustMagnitude = 0
         self.thrustVector = self.directionVector * self.thrustMagnitude
+        self.burnTime = burnTime
     
     def updateThrust(self):
         if 0 <= self.thrustMagnitude <= Rocket.maxThrust:

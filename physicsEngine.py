@@ -36,6 +36,7 @@ def restartSim(app):
     app.gameOver = False
     app.runTakeoffInstructions = app.runOrbitInstructions = app.runLandingInstructions = False
     app.runOrbit = False
+    app.fuelLeft = 50000
 
 def setupGameOver(app):
     app.runTakeoff = app.runLanding = app.showLoadingScreen = False
@@ -51,10 +52,10 @@ def onSurfaceEngineStart(app):
     app.g = Vector(0,-9.8)
     app.screen[2] = app.screen[3] = app.width
     if app.runTakeoff:
-        app.rocket = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 10000, altitude=0)
+        app.rocket = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 30000, altitude=0)
         app.screen[1] = app.height//2
     else:
-        app.rocket = Projectile(position = Vector(20,-2400), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 10000, altitude=3100)
+        app.rocket = Projectile(position = Vector(20,-2400), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 30000, altitude=3100)
         app.screen[0] = app.width//2
         app.screen[1] = app.rocket.position.y
 
@@ -133,6 +134,7 @@ def redrawAll(app):
         rocketVelocity = int(app.rocket.getVelocity())
         rocketVelocity = -rocketVelocity if app.rocket.velocity.y < 0 else rocketVelocity
         drawLabel(f'Velocity: {rocketVelocity} m/s', 80, 80, fill=labelColor)
+        drawLabel(f'Fuel: {app.rocket.burnTime}', 80, 120, fill=labelColor)
         redrawSurfaceEngine(app, boxX, boxY) if app.runTakeoff else redrawLanding(app, boxX, boxY)
         if app.gameOver:
             drawGameOverScreen(app)
@@ -188,7 +190,7 @@ def redrawAll(app):
             drawLabel(f'x: {int(app.rocket.position.x)}', app.width-150, 25, font='monospace', fill='white', align='right')
             drawLabel(f'y: {int(app.rocket.position.y)}', app.width-150, 50, font='monospace', fill='white', align='right')
             drawLabel(f'nearestBody: {nearest}', app.width-150, 75, font='monospace', fill='white', align='right')
-
+            drawLabel(f'fuel left: {app.rocket.burnTime}', app.width-150, 100, fill='white', font='monospace', align='right')
             if app.paused:
                 for position in app.projectedPositions:
                     drawCircle(position.x, position.y, 1, fill='lightBlue')
@@ -501,9 +503,9 @@ def rocketKeyHold(app, keys):
         app.rocket.angle -= 5
     app.rocket.updateDirection()
 
-    if 'down' in keys:
+    if 'down' in keys and app.rocket.burnTime > 0 and app.rocket.thrust > 0:
         app.rocket.thrust -= 10
-    if 'up' in keys:
+    if 'up' in keys and app.rocket.burnTime > 0:
         app.rocket.thrust += 10
 
 def generateProjectedPositions(app, stepDt, steps):
@@ -557,9 +559,9 @@ def mainGameKeyHold(app, keys):
             app.screen[0] -= 2
         if 'd' in keys and app.screen[0] < app.width:
             app.screen[0] += 2
-    if 'up' in keys and 'down' not in keys:
+    if 'up' in keys and 'down' not in keys and app.rocket.burnTime > 0:
         app.rocket.thrustMagnitude += 3
-    if 'down' in keys and 'up' not in keys:
+    if 'down' in keys and 'up' not in keys and app.rocket.burnTime > 0:
         app.rocket.thrustMagnitude -= 3
     if 'left' in keys and 'right' not in keys:
         app.rocket.angle -= math.pi / 60
@@ -592,6 +594,11 @@ def mainTakeStep(app):
                                     cBodyLeft, cBodyTop, cBody.radius*2, cBody.radius*2):
                     app.gameOver = True
                     setupGameOver(app)
+        app.rocket.burnTime -= app.rocket.thrustMagnitude // 5
+        if app.rocket.burnTime <= 0:
+            app.rocket.thrustVector = Vector(0, 0)
+            app.rocket.thrustMagnitude = 0
+            app.rocket.burnTime = 0
 
 
     # compute net gravitational forces acting on each body
@@ -647,11 +654,10 @@ def takeStepForSurfaceEngine(app):
         Fd =  (app.rocket.directionVector * (-1) * ((1/2) * p * (app.rocket.velocity.mag**2) * app.rocket.crossSectionalArea * app.rocket.Cd)).roundVector(1)
     else: # figure out falling back down drag force later
        Fd = Vector(0,0)
-
+    app.rocket.burnTime -= app.rocket.thrust // 20
     if app.rocket.burnTime > 0:
         Ft = app.rocket.directionVector * app.rocket.thrust
-        app.rocket.burnTime -= 1
-    elif app.rocket.burnTime == 0:
+    else:
         app.rocket.thrust = 0
         Ft = Vector(0,0)
 
