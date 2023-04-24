@@ -1,4 +1,4 @@
-#Current lines: 703, target: 1000
+#Current lines: 792, target: 1000
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket, Projectile
 from Drawings import drawCSM, drawLander, drawLaunchRocket
@@ -34,7 +34,7 @@ def restartSim(app):
     app.trailCutoffConstant = 5
     app.cameraMoveStep = 5
     app.gameOver = False
-    app.runTakeoffInstructions = False
+    app.runTakeoffInstructions = app.runOrbitInstructions = False
 
 def setupGameOver(app):
     app.runTakeoff = app.runLanding = app.showLoadingScreen = False
@@ -107,6 +107,8 @@ def redrawAll(app):
     boxY = app.screen[1] - app.screen[3]//2
     if app.runTakeoffInstructions:
         drawTakeoffInstructions(app)
+    elif app.runOrbitInstructions:
+        drawOrbitInstructions(app)
     elif app.runTakeoff or app.runLanding:
         if app.rocket.altitude < app.height//2:
             app.screen[1] = app.height//2
@@ -209,6 +211,36 @@ def drawTakeoffInstructions(app):
         buttonMessage = 'start'
         buttonMessageIndex = getLineIndex(app, 200, 10, buttonMessage)
         scaling = (app.step-200) / 50 if app.step < 250 else 1
+        drawRect(app.width//2, 550, 100*scaling, 50, border='white', align='center')
+        drawLabel(buttonMessage[:buttonMessageIndex], app.width//2, 550, fill='gold', font='monospace', size=20)
+
+def drawOrbitInstructions(app):
+    drawRect(0, 0, app.width, app.height, fill='black')
+    title = 'orbit'
+    titleIndex = getLineIndex(app, 1, 10, title)
+    drawLabel(title[:titleIndex], app.width//2, 100, fill='white', font='monospace', size=50)
+    firstLine = 'You must pilot the rocket to mars'
+    firstLineIndex = getLineIndex(app, 50, 2, firstLine)
+    drawLabel(firstLine[:firstLineIndex], app.width//2, 150, fill='white', font='monospace', size=15)
+    secondLine = '1. Use the up and down keys to increase \ decrease thrust'
+    secondLineIndex = getLineIndex(app, 100, 3, secondLine)
+    drawLabel(secondLine[:secondLineIndex], app.width//2, 300, fill='white', font='monospace', size=13)
+    thirdLine = '2. Use the left and right keys to utilize to rotate the rocket'
+    thirdLineIndex = getLineIndex(app, 90, 2, thirdLine)
+    drawLabel(thirdLine[:thirdLineIndex], app.width//2, 350, fill='white', font='monospace', size=13)
+    fourthLine = '3. press p to project orbits and i to display planet names'
+    fourthLineIndex = getLineIndex(app, 98, 2, fourthLine)
+    drawLabel(fourthLine[:fourthLineIndex], app.width//2, 400, fill='white', font='monospace', size=13)
+    fifthLine = '4. x / y coordinates, velocity, and thrust are all displayed in the top right'
+    fifthLineIndex = getLineIndex(app, 110, 1, fifthLine)
+    drawLabel(fifthLine[:fifthLineIndex], app.width//2, 450, fill='white', font='monospace', size=13)
+    sixthLine = '5. as always, be sure to conserve fuel'
+    sixthLineIndex = getLineIndex(app, 100, 2, sixthLine)
+    drawLabel(sixthLine[:sixthLineIndex], app.width//2, 500, fill='white', font='monospace', size=13)
+    if app.step > 130:
+        buttonMessage = 'start'
+        buttonMessageIndex = getLineIndex(app, 130, 10, buttonMessage)
+        scaling = (app.step-130) / 50 if app.step < 180 else 1
         drawRect(app.width//2, 550, 100*scaling, 50, border='white', align='center')
         drawLabel(buttonMessage[:buttonMessageIndex], app.width//2, 550, fill='gold', font='monospace', size=20)
 
@@ -327,7 +359,7 @@ def gameOverMousePress(app, mouseX, mouseY):
             loadingScreenSim(app)
 
 def loadingScreenMousePress(app, mouseX, mouseY):
-    if not app.showSettings and not app.runTakeoffInstructions:
+    if not app.showSettings and not app.runTakeoffInstructions and not app.runOrbitInstructions:
         if (app.width//2 - 50) <= mouseX <= (app.width//2 + 50):
             if app.height-200 <= mouseY <= app.height-150:
                 app.showSettings = True
@@ -340,16 +372,24 @@ def loadingScreenMousePress(app, mouseX, mouseY):
                     app.showSettings = False
                     app.takeoffButtonColor = 'grey'
             elif 300 <= mouseY <= 350:
-                setupGame(app)
+                app.runOrbitInstructions = True
+                app.step = 1
+                app.showSettings = False
+                # setupGame(app)
             elif 400 <= mouseY <= 450:
                 app.runLanding = True
                 onSurfaceEngineStart(app)
-    elif app.runTakeoffInstructions:
-            if app.width//2 - 50 <= mouseX <= app.width//2 + 50:
-                if 525 <= mouseY <= 575:
+    else:
+        print()
+        if app.width//2 - 50 <= mouseX <= app.width//2 + 50:
+            if 525 <= mouseY <= 575:
+                if app.runTakeoffInstructions:
+                     app.runTakeoff = True
+                     onSurfaceEngineStart(app)
+                elif app.runOrbitInstructions:
+                    app.runOrbitInstructions = False
+                    setupGame(app)
 
-                    app.runTakeoff = True
-                    onSurfaceEngineStart(app)
     
                 
        
