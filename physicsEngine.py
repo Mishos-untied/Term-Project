@@ -43,6 +43,8 @@ def setupGameOver(app):
     app.step = 1
 
 def onSurfaceEngineStart(app):
+    app.showSettings = False
+    app.runTakeoffInstructions = False
     app.dt = 0.07
     app.g = Vector(0,-9.8)
     if app.runTakeoff:
@@ -185,19 +187,41 @@ def redrawAll(app):
 
 def drawTakeoffInstructions(app):
     drawRect(0, 0, app.width, app.height, fill='black')
-    titleIndex = 7 * app.step//50 if app.step < 50 else 7
+    titleIndex = getLineIndex(app, 1, 10, 'Takeoff')
     drawLabel('Takeoff'[:titleIndex], app.width//2, 100, size=50, fill='white', font='monospace')
     firstLine = 'Your current mission is to bring the rocket into low earth orbit'
-    if app.step <= 50:
-        firstLineIndex = 0
-    else:
-        firstLineIndex = len(firstLine) * (app.step - 50) // 100 if app.step < 70 else len(firstLine)
+    firstLineIndex = getLineIndex(app, 50, 2, firstLine)
     drawLabel(firstLine[:firstLineIndex], app.width//2,
               150, fill='white', font='monospace', size=15)
+    secondLine = '1. Press up and down to increase / decrease thrust'
+    secondLineIndex = getLineIndex(app, 180, 2, secondLine)
+    drawLabel(secondLine[:secondLineIndex], app.width//2, 300, size=13, fill='white', font='monospace')
+    thirdLine = '2. Your goal is to pass the Karman line, approximately 100 km above the surface'
+    thirdLineIndex = getLineIndex(app, 170, 3, thirdLine)
+    drawLabel(thirdLine[:thirdLineIndex], app.width//2, 350, size=13, fill='white', font='monospace')
+    fourthLine = '3. Be wary not to run out of fuel'
+    fourthLineIndex = getLineIndex(app, 175, 2, fourthLine)
+    drawLabel(fourthLine[:fourthLineIndex], app.width//2, 400, size=13, fill='white', font='monospace')
+    fifthLine = '4. at aout 80 km, begin to turn laterally in order to enter earth orbit'
+    fifthLineIndex = getLineIndex(app, 180, 2, thirdLine)
+    drawLabel(fifthLine[:fifthLineIndex], app.width//2, 450, size=13, fill='white', font='monospace')
+    if app.step > 200:
+        buttonMessage = 'start'
+        buttonMessageIndex = getLineIndex(app, 200, 10, buttonMessage)
+        scaling = (app.step-200) / 50 if app.step < 250 else 1
+        drawRect(app.width//2, 550, 100*scaling, 50, border='white', align='center')
+        drawLabel(buttonMessage[:buttonMessageIndex], app.width//2, 550, fill='gold', font='monospace', size=20)
+
+def getLineIndex(app, startTime, speed, message):
+    if app.step < startTime:
+        return 0
+    else:
+        return ((app.step - startTime) // speed if 
+                app.step < startTime * len(message) * speed else len(message))
     
 def redrawSurfaceEngine(app, boxX, boxY):
     drawLaunchRocket(app,height=200, dx=boxX, dy=boxY, engineOn=False)
-    
+
 def redrawLanding(app, boxX, boxY):
     drawLander(app, dx=boxX, dy=boxY, height=50)
 
@@ -275,6 +299,15 @@ def findNearestBody(cBody):
                 best = entity
     return best.name
 
+
+def onMouseDrag(app, mouseX, mouseY):
+    if app.runTakeoffInstructions:
+        if (app.width//2 - 50) <= mouseX <= (app.width//2 + 50):
+            if 500 <= mouseY <= 550:
+                app.takeoffButtonColor = 'white'
+        else:
+            app.takeoffButtonColor = 'grey'
+
 def onMousePress(app, mouseX, mouseY):
     if not app.gameOver:
         if not app.showLoadingScreen:
@@ -294,24 +327,32 @@ def gameOverMousePress(app, mouseX, mouseY):
             loadingScreenSim(app)
 
 def loadingScreenMousePress(app, mouseX, mouseY):
-    if not app.showSettings:
+    if not app.showSettings and not app.runTakeoffInstructions:
         if (app.width//2 - 50) <= mouseX <= (app.width//2 + 50):
             if app.height-200 <= mouseY <= app.height-150:
                 app.showSettings = True
-    else:
+    elif app.showSettings:
         if (app.width//2 - 100) <= mouseX <= (app.width // 2 + 100):
             if 200 <= mouseY <= 250:
-                app.runTakeoffInstructions = True
-                app.step = 1
-                # onSurfaceEngineStart(app)
+                if not app.runTakeoffInstructions:
+                    app.runTakeoffInstructions = True
+                    app.step = 1
+                    app.showSettings = False
+                    app.takeoffButtonColor = 'grey'
             elif 300 <= mouseY <= 350:
                 setupGame(app)
             elif 400 <= mouseY <= 450:
                 app.runLanding = True
                 onSurfaceEngineStart(app)
-                
-            
+    elif app.runTakeoffInstructions:
+            if app.width//2 - 50 <= mouseX <= app.width//2 + 50:
+                if 525 <= mouseY <= 575:
 
+                    app.runTakeoff = True
+                    onSurfaceEngineStart(app)
+    
+                
+       
 def mainGameMousePress(app, mouseX, mouseY):
     if 50 <= mouseX <= app.width - 50:
         if 50 <= mouseY <= app.height - 50:
