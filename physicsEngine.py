@@ -3,6 +3,7 @@ from cmu_graphics import *
 from Classes import Vector, Body, Rocket, Projectile
 from Drawings import drawCSM, drawLander
 import math
+import copy
 
 def onAppStart(app):
     app.showLoadingScreen = True
@@ -45,21 +46,23 @@ def onSurfaceEngineStart(app):
     if app.runTakeoff:
         app.rocket = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 10000, altitude=0)
     else:
-        app.rocket = Projectile(position=Vector(20, -1600), mass=7.257, angle=90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0, 0), thrust=50, burnTime=10000, altitude = 2300)
-
+        app.rocket = Projectile(position = Vector(20,-1600), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 10000, altitude=2300)
 
 def setupGame(app):
     app.dt = 0.01
-    app.runLanding = False
-    app.runTakeoff = False
+    app.runLander = app.runTakeoff = False
     app.showStats = True
     app.step = 1
     app.showLoadingScreen = False
     app.showSettings = False
-    app.zoomedIn = True
+    app.zoomedIn = False
     app.gameOver = False
+    app.screen = [app.width//2, app.height//2, app.width, app.height]
     app.drawTrails = False
     Body.instances = []
+    app.projectedPositions = []
+    app.rocketProjectedPositions = []
+    app.projected = False
     sunRadius = 10
     sunMass = 100000
     planet1Radius = 4
@@ -72,8 +75,7 @@ def setupGame(app):
     app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red', name='mars')
     app.planet2 = Body(position=Vector(app.width//2,550), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='earth')
     app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='venus')
-    app.rocket = Rocket(position=Vector(app.width//2, 520), radius=2, mass=10, velocity=Vector(-18,0),color='grey', name='rocket')
-    app.screen = [app.rocket.position.x, app.rocket.position.y, 100, 100]
+    app.rocket = Rocket(position=Vector(app.width//2, 530), radius=2, mass=10, velocity=Vector(-18,0),color='grey', name='rocket')
 
 def scalePosition(unscaledPosition):
     scale = 1
@@ -106,7 +108,7 @@ def redrawAll(app):
             app.screen[1] = app.rocket.position.y
         #app.screen[0] = app.rocket.position.x
         drawRect((-app.width-boxX)*5,app.height-boxY-20,app.width*15,app.height*20,fill='darkOliveGreen')
-        drawRect((-app.width-boxX)*8, app.height-boxY-(app.height*8-680), app.width*15, app.height*7, fill=gradient('lightBlue', 'blue',
+        drawRect((-app.width-boxX)*5, app.height-boxY-(app.height*8-680), app.width*15, app.height*7, fill=gradient('lightBlue', 'blue',
                                                                                         'midnightblue', 'darkBlue', 'black', start='bottom'))
         labelColor = 'white' if app.rocket.altitude > 1000 else 'black'
         drawLabel(f'Altitude: {rounded(app.rocket.altitude)} meters', 80, 40, fill=labelColor)
@@ -165,13 +167,20 @@ def redrawAll(app):
             drawLabel(f'x: {int(app.rocket.position.x)}', app.width-150, 25, font='monospace', fill='white', align='right')
             drawLabel(f'y: {int(app.rocket.position.y)}', app.width-150, 50, font='monospace', fill='white', align='right')
             drawLabel(f'nearestBody: {nearest}', app.width-150, 75, font='monospace', fill='white', align='right')
+
+            if app.paused:
+                for position in app.projectedPositions:
+                    drawCircle(position.x, position.y, 1, fill='lightBlue')
+                for position in app.rocketProjectedPositions:
+                    drawCircle(position.x, position.y, 1, fill='lightGreen')
+        
         if not app.zoomedIn and app.showStats:
             displayFullscreen(app)
         if app.gameOver:
             drawGameOverScreen(app)
 
 def redrawSurfaceEngine(app, boxX, boxY):
-    drawCSM(app, height=50, dx=boxX, dy=boxY, engineOn=True)
+    drawCSM(app,height=50, dx=boxX, dy=boxY, engineOn=True)
 
 def redrawLanding(app, boxX, boxY):
     drawLander(app, dx=boxX, dy=boxY, height=50)
@@ -219,7 +228,7 @@ def displayFullscreen(app):
                     size=12/scaling)
             drawLine(cBody.position.x, cBody.position.y, labelX-3/scaling, labelY+8/scaling, fill='silver')
     cyclePosition = app.step % 50
-    if not app.gameOver:
+    if not app.gameOver and not app.paused:
         drawCircle(app.rocket.position.x, app.rocket.position.y, (cyclePosition//2)+1, border='white',
                 fill=None, opacity=100- cyclePosition*2)
 
@@ -308,6 +317,18 @@ def mainGameKeyPress(app, key):
         app.step = 1
     if key == 'p':
         app.paused = not app.paused
+
+        if app.paused == False:
+            app.projected = False
+        elif app.paused:
+            app.zoomedIn = False
+            app.screen[0] = app.width // 2
+            app.screen[1] = app.height // 2
+            app.screen[2] = app.width
+            app.screen[3] = app.height
+            if app.projected == False:
+                generateProjectedPositions(app, 0.1, 100)
+
     if key == 't':
         app.drawTrails = not app.drawTrails
     if (key == 's' and app.paused == True):
@@ -343,6 +364,47 @@ def rocketKeyHold(app, keys):
         app.rocket.thrust -= 10
     if 'up' in keys:
         app.rocket.thrust += 10
+
+def generateProjectedPositions(app, stepDt, steps):
+
+    app.projectedPositions = []
+    app.rocketProjectedPositions = []
+
+
+    newBodiesList = copy.deepcopy(Body.instances)
+    
+    for i in range(steps):
+        # compute net gravitational forces acting on each body
+        for cBod in newBodiesList:
+            cBod.netForceFelt = Vector(0,0)
+        for i in range(len(newBodiesList)):
+            for j in range(i+1,len(Body.instances)):
+                cBod1 = newBodiesList[i]
+                cBod2 = newBodiesList[j]
+                
+                r = cBod2.position - cBod1.position
+
+                if r.mag > (cBod1.radius + cBod2.radius):
+
+                    Fg = r*(-app.G*cBod1.mass*cBod2.mass) / (r.mag**3)
+
+                    cBod1.netForceFelt -= Fg
+                    cBod2.netForceFelt += Fg
+
+        for cBod in newBodiesList:
+
+            cBod.momentum = cBod.momentum + (cBod.netForceFelt * stepDt)
+                    
+            cBod.velocity = cBod.momentum / cBod.mass
+
+            cBod.position = cBod.position + (cBod.momentum/cBod.mass)*stepDt
+            if isinstance(cBod, Rocket):
+                app.rocketProjectedPositions.append(cBod.position)
+            else:
+                app.projectedPositions.append(cBod.position)
+
+    app.projected = True
+
 
 def mainGameKeyHold(app, keys):
     if app.screen[2] == 100:
@@ -455,7 +517,7 @@ def takeStepForSurfaceEngine(app):
             setupGameOver(app)
     app.rocket.position = app.rocket.position - deltaPosition
     app.rocket.altitude += deltaPosition.y
-    if app.rocket.altitude > 3000:
+    if app.rocket.altitude > 3300:
         setupGame(app)
 
 def onStep(app):
