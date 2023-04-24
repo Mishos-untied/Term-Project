@@ -106,7 +106,7 @@ def redrawAll(app):
             app.screen[1] = app.rocket.position.y
         #app.screen[0] = app.rocket.position.x
         drawRect((-app.width-boxX)*5,app.height-boxY-20,app.width*15,app.height*20,fill='darkOliveGreen')
-        drawRect((-app.width-boxX)*5, app.height-boxY-2820, app.width*15, app.height*4, fill=gradient('lightBlue', 'blue',
+        drawRect((-app.width-boxX)*8, app.height-boxY-(app.height*8-680), app.width*15, app.height*7, fill=gradient('lightBlue', 'blue',
                                                                                         'midnightblue', 'darkBlue', 'black', start='bottom'))
         labelColor = 'white' if app.rocket.altitude > 1000 else 'black'
         drawLabel(f'Altitude: {rounded(app.rocket.altitude)} meters', 80, 40, fill=labelColor)
@@ -455,7 +455,7 @@ def takeStepForSurfaceEngine(app):
             setupGameOver(app)
     app.rocket.position = app.rocket.position - deltaPosition
     app.rocket.altitude += deltaPosition.y
-    if app.rocket.altitude > 2300:
+    if app.rocket.altitude > 3000:
         setupGame(app)
 
 def onStep(app):
