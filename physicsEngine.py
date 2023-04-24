@@ -1,4 +1,4 @@
-#Current lines: 865, target: 1000
+#Current lines: 884, target: 1000
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket, Projectile
 from Drawings import drawCSM, drawLander, drawLaunchRocket
@@ -35,6 +35,7 @@ def restartSim(app):
     app.cameraMoveStep = 5
     app.gameOver = False
     app.runTakeoffInstructions = app.runOrbitInstructions = app.runLandingInstructions = False
+    app.runOrbit = False
 
 def setupGameOver(app):
     app.runTakeoff = app.runLanding = app.showLoadingScreen = False
@@ -43,19 +44,25 @@ def setupGameOver(app):
     app.step = 1
 
 def onSurfaceEngineStart(app):
+    app.runOrbit = False
     app.showSettings = False
     app.runTakeoffInstructions = False
     app.dt = 0.07
     app.g = Vector(0,-9.8)
+    app.screen[2] = app.screen[3] = app.width
     if app.runTakeoff:
         app.rocket = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 10000, altitude=0)
+        app.screen[1] = app.height//2
     else:
-        app.rocket = Projectile(position = Vector(20,-1600), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 10000, altitude=2300)
+        app.rocket = Projectile(position = Vector(20,-2400), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 10000, altitude=3100)
+        app.screen[0] = app.width//2
+        app.screen[1] = app.rocket.position.y
 
 def setupGame(app):
     app.dt = 0.01
     app.runLander = app.runTakeoff = False
     app.showStats = True
+    app.runOrbit = True
     app.step = 1
     app.showLoadingScreen = False
     app.showSettings = False
@@ -116,7 +123,9 @@ def redrawAll(app):
             app.screen[1] = app.height//2
         else:
             app.screen[1] = app.rocket.position.y
-        drawRect((-app.width-boxX)*5,app.height-boxY-20,app.width*15,app.height*20,fill='darkOliveGreen')
+        app.screen[0] = app.width//2
+        groundColor = 'darkOliveGreen' if app.runTakeoff else 'fireBrick'
+        drawRect((-app.width-boxX)*5,app.height-boxY-20,app.width*15,app.height*20,fill=groundColor)
         drawRect((-app.width-boxX)*5, app.height-boxY-(app.height*8-680), app.width*15, app.height*7, fill=gradient('lightBlue', 'blue',
                                                                                         'midnightblue', 'darkBlue', 'black', start='bottom'))
         labelColor = 'white' if app.rocket.altitude > 1000 else 'black'
@@ -229,7 +238,7 @@ def drawOrbitInstructions(app):
     secondLine = '1. Use the up and down keys to increase \ decrease thrust'
     secondLineIndex = getLineIndex(app, 100, 3, secondLine)
     drawLabel(secondLine[:secondLineIndex], app.width//2, 300, fill='white', font='monospace', size=13)
-    thirdLine = '2. Use the left and right keys to utilize to rotate the rocket'
+    thirdLine = '2. Use the left and right keys to rotate the rocket'
     thirdLineIndex = getLineIndex(app, 90, 2, thirdLine)
     drawLabel(thirdLine[:thirdLineIndex], app.width//2, 350, fill='white', font='monospace', size=13)
     fourthLine = '3. press p to project orbits and i to display planet names'
@@ -370,7 +379,7 @@ def onMouseDrag(app, mouseX, mouseY):
 
 def onMousePress(app, mouseX, mouseY):
     if not app.gameOver:
-        if not app.showLoadingScreen:
+        if not app.showLoadingScreen and app.runOrbit:
             mainGameMousePress(app, mouseX, mouseY)
         else:
             loadingScreenMousePress(app, mouseX, mouseY)
@@ -408,7 +417,6 @@ def loadingScreenMousePress(app, mouseX, mouseY):
                 app.runLandingInstructions = True
                 app.step = 1
                 app.showSettings = False
-                #onSurfaceEngineStart(app)
     else:
         if app.width//2 - 50 <= mouseX <= app.width//2 + 50:
             if 525 <= mouseY <= 575:
@@ -421,6 +429,7 @@ def loadingScreenMousePress(app, mouseX, mouseY):
                     setupGame(app)
                 elif app.runLandingInstructions:
                     app.runLandingInstructions = False
+                    app.showLoadingScreen = False
                     app.runLanding = True
                     onSurfaceEngineStart(app)
 
@@ -430,7 +439,7 @@ def loadingScreenMousePress(app, mouseX, mouseY):
 def mainGameMousePress(app, mouseX, mouseY):
     if 50 <= mouseX <= app.width - 50:
         if 50 <= mouseY <= app.height - 50:
-            if not app.zoomedIn:
+            if not app.zoomedIn and not app.paused:
                 app.screen[0], app.screen[1] = app.rocket.position.x, app.rocket.position.y
                 app.screen[2] = app.screen[3] = 100
                 app.zoomedIn = True
@@ -480,9 +489,9 @@ def mainGameKeyPress(app, key):
 
 
 def onKeyHold(app, keys):
-    if not app.showLoadingScreen and not app.gameOver:
+    if not app.showLoadingScreen and not app.gameOver and app.runOrbit:
         mainGameKeyHold(app, keys)
-    elif app.runTakeoff or app.runLanding:
+    else:
         rocketKeyHold(app, keys)
 
 def rocketKeyHold(app, keys):
@@ -618,6 +627,15 @@ def mainTakeStep(app):
         
         cBod.position = cBod.position + (cBod.momentum/cBod.mass)*app.dt
         cBod.updateVelocity()
+    #check if the rocket is close to mars
+    if app.runOrbit:
+        rocketCx, rocketCy = app.rocket.position.x, app.rocket.position.y
+        marsCx, marsCy = app.planet1.position.x, app.planet1.position.y
+        if distance(rocketCx, rocketCy, marsCx, marsCy) < 10:
+            app.step = 1
+            app.showSettings = False
+            app.showLoadingScreen = True
+            app.runLandingInstructions = True
 
 def takeStepForSurfaceEngine(app):
     Fg = app.g * app.rocket.mass
@@ -644,7 +662,7 @@ def takeStepForSurfaceEngine(app):
     deltaPosition = (app.rocket.momentum/app.rocket.mass)*app.dt
     if app.rocket.altitude <= 0:
         deltaPosition = Vector(0, 0) if deltaPosition.y < 0 else deltaPosition
-        if app.rocket.getVelocity() >= 1000:
+        if app.rocket.getVelocity() >= 100:
             app.gameOver = True
             app.step = 1
             setupGameOver(app)
