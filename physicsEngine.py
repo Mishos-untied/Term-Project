@@ -1,4 +1,4 @@
-#Current lines: 831, target: 1000
+#Current lines: 865, target: 1000
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket, Projectile
 from Drawings import drawCSM, drawLander, drawLaunchRocket
@@ -121,6 +121,9 @@ def redrawAll(app):
                                                                                         'midnightblue', 'darkBlue', 'black', start='bottom'))
         labelColor = 'white' if app.rocket.altitude > 1000 else 'black'
         drawLabel(f'Altitude: {rounded(app.rocket.altitude)} meters', 80, 40, fill=labelColor)
+        rocketVelocity = int(app.rocket.getVelocity())
+        rocketVelocity = -rocketVelocity if app.rocket.velocity.y < 0 else rocketVelocity
+        drawLabel(f'Velocity: {rocketVelocity} m/s', 80, 80, fill=labelColor)
         redrawSurfaceEngine(app, boxX, boxY) if app.runTakeoff else redrawLanding(app, boxX, boxY)
         if app.gameOver:
             drawGameOverScreen(app)
@@ -232,7 +235,7 @@ def drawOrbitInstructions(app):
     fourthLine = '3. press p to project orbits and i to display planet names'
     fourthLineIndex = getLineIndex(app, 98, 2, fourthLine)
     drawLabel(fourthLine[:fourthLineIndex], app.width//2, 400, fill='white', font='monospace', size=13)
-    fifthLine = '4. x / y coordinates, velocity, and thrust are all displayed in the top right'
+    fifthLine = '4. x/y coordinates, velocity, and thrust are all displayed in the top right'
     fifthLineIndex = getLineIndex(app, 110, 1, fifthLine)
     drawLabel(fifthLine[:fifthLineIndex], app.width//2, 450, fill='white', font='monospace', size=13)
     sixthLine = '5. as always, be sure to conserve fuel'
@@ -407,7 +410,6 @@ def loadingScreenMousePress(app, mouseX, mouseY):
                 app.showSettings = False
                 #onSurfaceEngineStart(app)
     else:
-        print(app.runLandingInstructions)
         if app.width//2 - 50 <= mouseX <= app.width//2 + 50:
             if 525 <= mouseY <= 575:
                 if app.runTakeoffInstructions:
@@ -642,14 +644,25 @@ def takeStepForSurfaceEngine(app):
     deltaPosition = (app.rocket.momentum/app.rocket.mass)*app.dt
     if app.rocket.altitude <= 0:
         deltaPosition = Vector(0, 0) if deltaPosition.y < 0 else deltaPosition
-        if app.rocket.getVelocity() >= 100:
+        if app.rocket.getVelocity() >= 1000:
             app.gameOver = True
             app.step = 1
             setupGameOver(app)
+        app.rocket.momentum = Vector(0, 0) if deltaPosition == Vector(0, 0) else app.rocket.momentum
+        app.rocket.velocity = app.rocket.momentum / app.rocket.mass
+        # if the rocket ends up under the surface, redraw it so it isn't
+        app.rocket.position.y = 680
+        app.rocket.altitude = 0
     app.rocket.position = app.rocket.position - deltaPosition
     app.rocket.altitude += deltaPosition.y
     if app.rocket.altitude > 3300:
-        setupGame(app)
+        if app.runTakeoff:
+            app.step = 1
+            app.runOrbitInstructions = True
+            app.runTakeoff = False
+        else:
+            app.gameOver = True
+            setupGameOver(app)
 
 def onStep(app):
     app.step += 1

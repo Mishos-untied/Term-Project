@@ -21,7 +21,7 @@ class Vector:
             return Vector(newX, newY)
         
         def __mul__(self, other):
-            if not ( isinstance(other, float) or isinstance(other, int) ):
+            if not (isinstance(other, float) or isinstance(other, int)):
                 raise TypeError('Can only multiply a vector with a scalar')
             elif (isinstance(other, float) or isinstance(other,int)):
                 newX = self.x * other
@@ -29,7 +29,7 @@ class Vector:
                 return Vector(newX, newY)
             
         def __truediv__(self,other):
-            if not ( isinstance(other, float) or isinstance(other, int) ):
+            if not (isinstance(other, float) or isinstance(other, int)):
                 raise TypeError('Can only divide a vector with a scalar')
             elif (isinstance(other, float) or isinstance(other,int)):
                 return (self * (1 / other))
@@ -38,6 +38,11 @@ class Vector:
             x = pythonRound(self.x,decimalPlaces)
             y = pythonRound(self.y,decimalPlaces)
             return Vector(x, y)
+        
+        def __eq__(self, other):
+            return (isinstance(other, Vector) 
+                    and self.x == other.x
+                    and self.y == other.y)
 
 class Body:
         instances = []
