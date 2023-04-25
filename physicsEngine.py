@@ -22,6 +22,7 @@ def loadingScreenSim(app):
     app.sun3 = Body(Vector(400, 350), sunRadius, sunMass, Vector(10, 25), 'yellow', name='3')
 
 def restartSim(app):
+    app.fuelLeft = 50000
     app.showStats = False
     app.showSettings = False
     app.screen = [app.width//2, app.height//2, app.width, app.height]
@@ -52,10 +53,10 @@ def onSurfaceEngineStart(app):
     app.g = Vector(0,-9.8)
     app.screen[2] = app.screen[3] = app.width
     if app.runTakeoff:
-        app.rocket = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 30000, altitude=0)
+        app.rocket = Projectile(position = Vector(20,app.height), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = app.fuelLeft, altitude=0)
         app.screen[1] = app.height//2
     else:
-        app.rocket = Projectile(position = Vector(20,-2400), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = 30000, altitude=3100)
+        app.rocket = Projectile(position = Vector(20,-2400), mass = 7.257, angle = 90, Cd = 0.342, crossSectionalArea=(math.pi*(0.37/2)**2), velocity = Vector(0,0), thrust = 0, burnTime = app.fuelLeft, altitude=3100)
         app.screen[0] = app.width//2
         app.screen[1] = app.rocket.position.y
 
@@ -87,7 +88,7 @@ def setupGame(app):
     app.planet1 = Body(position=Vector(app.width//2,160), radius=planet1Radius, mass=planet1Mass, velocity=Vector(15,0), color='red', name='mars')
     app.planet2 = Body(position=Vector(app.width//2,550), radius=planet2Radius, mass=planet2Mass, velocity=Vector(-18,0), color='green', name='earth')
     app.planet3 = Body(position=Vector(app.width//2,300), radius=planet3Radius, mass=planet3Mass, velocity=Vector(25,0), color='orange', name='venus')
-    app.rocket = Rocket(position=Vector(app.width//2, 530), radius=2, mass=10, velocity=Vector(-18,0),color='grey', name='rocket')
+    app.rocket = Rocket(position=Vector(app.width//2, 530), radius=2, mass=10, velocity=Vector(-18,0),color='grey', name='rocket', burnTime=app.fuelLeft)
 
 def scalePosition(unscaledPosition):
     scale = 1
@@ -640,6 +641,7 @@ def mainTakeStep(app):
         marsCx, marsCy = app.planet1.position.x, app.planet1.position.y
         if distance(rocketCx, rocketCy, marsCx, marsCy) < 10:
             app.step = 1
+            app.fuelLeft = app.rocket.burnTime
             app.showSettings = False
             app.showLoadingScreen = True
             app.runLandingInstructions = True
@@ -682,6 +684,7 @@ def takeStepForSurfaceEngine(app):
     if app.rocket.altitude > 3300:
         if app.runTakeoff:
             app.step = 1
+            app.fuelLeft = app.rocket.burnTime
             app.runOrbitInstructions = True
             app.runTakeoff = False
         else:
