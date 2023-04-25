@@ -1,0 +1,49 @@
+#913
+
+
+    
+def getRainbowColor(colorNum, rainbowSteps):
+    stepSize = 913/rainbowSteps
+    n = int(colorNum * stepSize)
+    
+    # 0 <= n <= 913
+    if n <= 127: #red-orange
+        return rgb(255,n,0)
+    elif 127 < n <= 255: # orange-yellow
+        return rgb(255,n,0)
+    elif 255 < n <= 510: #yellow-green
+        i = n - 255
+        return rgb(255-i,255,0)
+    elif 510 < n <= 765: #green-blue
+        i = n - 510
+        return rgb(0,255-i,i)
+    elif 765 < n <= 913:
+        i = n - 765
+        j = 0.297*i
+        return rgb(i,0,255-j)
+
+
+color = getRainbowColor(10, 100)
+
+Rect(50,50,100,100, fill = color)
+    
+    
+    
+#Red-Orange
+for i in range(127):
+    Rect(i/2, 0, 1, 40, fill=rgb(255,i,0))
+#Orange-Yellow
+for i in range(127,255):
+    Rect(i/2, 0, 1, 40, fill=rgb(255,i,0))
+#Yellow-Green
+for i in range(255):
+    Rect(255/2 + i/2, 0, 1, 40, fill=rgb(255-i,255,0))
+#Green-Blue
+for i in range(255):
+    Rect(255 + i/2, 0, 1, 40, fill = rgb(0,255-i,i))
+#Blue-Violet
+for i in range(148):
+    j = 0.297*i
+    Rect(255 + 255/2 + i/2, 0, 1, 40, fill = rgb(i,0,255-j))
+
+

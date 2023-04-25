@@ -86,7 +86,7 @@ class Projectile:
 
 
 class Rocket(Body):
-    maxThrust = 200
+    maxThrust = 10e-18
     def __init__(self, position, radius, mass, velocity, color, angle=0, name=None):
         self.rocketAngle = angle
         super().__init__(position, radius, mass, velocity, color, name)
