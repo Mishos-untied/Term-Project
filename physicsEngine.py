@@ -1,4 +1,4 @@
-#Current lines: 884, target: 1000
+#Current lines: 912, target: 1000
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket, Projectile
 from Drawings import drawCSM, drawLander, drawLaunchRocket
