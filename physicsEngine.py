@@ -1,9 +1,10 @@
-#Current lines: 912, target: 1000
+#Current lines: 928, target: 1000
 from cmu_graphics import *
 from Classes import Vector, Body, Rocket, Projectile
 from Drawings import drawCSM, drawLander, drawLaunchRocket
 import math
 import copy
+import random
 
 def onAppStart(app):
     app.showLoadingScreen = True
@@ -181,7 +182,7 @@ def redrawAll(app):
             drawCircle(app.width-100, 50, 25, border='white')
             drawCircle(app.width-100, 50, 5, fill='white')
             velocity = app.rocket.getVelocityMagnitude()
-            if velocity > 50:
+            if velocity > 100:
                 extraAngle = 3 * math.pi / 2
             else:
                 extraAngle = (3 * math.pi /2)  * (velocity / 100)
@@ -191,7 +192,8 @@ def redrawAll(app):
             drawLabel(f'x: {int(app.rocket.position.x)}', app.width-150, 25, font='monospace', fill='white', align='right')
             drawLabel(f'y: {int(app.rocket.position.y)}', app.width-150, 50, font='monospace', fill='white', align='right')
             drawLabel(f'nearestBody: {nearest}', app.width-150, 75, font='monospace', fill='white', align='right')
-            drawLabel(f'fuel left: {app.rocket.burnTime}', app.width-150, 100, fill='white', font='monospace', align='right')
+            fuelColor = 'white' if app.rocket.burnTime > 10000 else 'red'
+            drawLabel(f'fuel left: {app.rocket.burnTime}', app.width-150, 100, fill=fuelColor, font='monospace', align='right')
             if app.paused:
                 for position in app.projectedPositions:
                     drawCircle(position.x, position.y, 1, fill='lightBlue')
@@ -319,6 +321,8 @@ def drawGameOverScreen(app):
         scaling = squareWidth/curLength
         drawRect(app.width//2, app.height//2+100, squareWidth/scaling, 20, border='white', align='center', borderWidth=1)
         drawLabel('restart'[:labelIndex], app.width//2, app.height//2+100, fill='white', font='monospace', size=20)
+    deathMessageIndex = getLineIndex(app, 20, 3, app.deathMessage)
+    drawLabel(app.deathMessage[:deathMessageIndex], app.width//2, app.height//2+50, fill='white', font='monospace', size=15)
 
 def displayFullscreen(app):
     for cBody in Body.instances:
@@ -494,7 +498,7 @@ def mainGameKeyPress(app, key):
 def onKeyHold(app, keys):
     if not app.showLoadingScreen and not app.gameOver and app.runOrbit:
         mainGameKeyHold(app, keys)
-    else:
+    elif app.runLanding or app.runTakeoff:
         rocketKeyHold(app, keys)
 
 def rocketKeyHold(app, keys):
@@ -587,6 +591,7 @@ def mainTakeStep(app):
     if not app.showLoadingScreen:
         rocketLeft = app.rocket.position.x - app.rocket.radius
         rocketTop = app.rocket.position.y - app.rocket.radius
+        # check for collisions + out of bounds
         for cBody in Body.instances:
             if not isinstance(cBody, Rocket):
                 cBodyLeft = cBody.position.x - cBody.radius
@@ -594,8 +599,14 @@ def mainTakeStep(app):
                 if rectanglesOverlap(rocketLeft, rocketTop, app.rocket.radius*2, app.rocket.radius*2,
                                     cBodyLeft, cBodyTop, cBody.radius*2, cBody.radius*2):
                     app.gameOver = True
+                    app.deathMessage = f'You crashed into {cBody.name}'
                     setupGameOver(app)
         app.rocket.burnTime -= app.rocket.thrustMagnitude // 5
+        if (-100 >= app.rocket.position.x or 800 <= app.rocket.position.x
+            or -100 >= app.rocket.position.y or 800 <= app.rocket.position.y):
+            app.gameOver = True
+            app.deathMessage = 'You flew out of bounds'
+            setupGameOver(app)
         if app.rocket.burnTime <= 0:
             app.rocket.thrustVector = Vector(0, 0)
             app.rocket.thrustMagnitude = 0
@@ -645,6 +656,7 @@ def mainTakeStep(app):
             app.showSettings = False
             app.showLoadingScreen = True
             app.runLandingInstructions = True
+    
 
 def takeStepForSurfaceEngine(app):
     Fg = app.g * app.rocket.mass
@@ -673,6 +685,11 @@ def takeStepForSurfaceEngine(app):
         if app.rocket.getVelocity() >= 100:
             app.gameOver = True
             app.step = 1
+            chance = random.randint(1, 10)
+            if chance == 5:
+                app.deathMessage = "helpful tip: don't crash"
+            else:
+                app.deathMessage = 'Your descent velocity was too high'
             setupGameOver(app)
         app.rocket.momentum = Vector(0, 0) if deltaPosition == Vector(0, 0) else app.rocket.momentum
         app.rocket.velocity = app.rocket.momentum / app.rocket.mass
@@ -688,6 +705,7 @@ def takeStepForSurfaceEngine(app):
             app.runOrbitInstructions = True
             app.runTakeoff = False
         else:
+            app.deathMessage = 'you went the wrong way'
             app.gameOver = True
             setupGameOver(app)
 
