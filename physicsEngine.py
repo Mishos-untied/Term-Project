@@ -1,4 +1,26 @@
 #Current lines: 928, target: 1000
+
+
+##### Physics Research Citations ##############################################
+# https://en.wikipedia.org/wiki/Orbital_mechanics
+# https://en.wikipedia.org/wiki/Celestial_mechanics
+# https://en.wikipedia.org/wiki/Kepler%27s_laws_of_planetary_motion
+# https://en.wikipedia.org/wiki/Classical_mechanics
+# https://en.wikipedia.org/wiki/Ellipse
+# https://en.wikipedia.org/wiki/Focus_(geometry)
+# https://en.wikipedia.org/wiki/Drag_(physics)
+# https://en.wikipedia.org/wiki/N-body_problem
+# https://en.wikipedia.org/wiki/Conic_section
+# https://en.wikipedia.org/wiki/Standard_gravitational_parameter
+# https://en.wikipedia.org/wiki/Hohmann_transfer_orbit
+# https://en.wikipedia.org/wiki/Elliptic_orbit
+# https://en.wikipedia.org/wiki/Tsiolkovsky_rocket_equation
+# https://en.wikipedia.org/wiki/Apsis
+# https://www.sciencelearn.org.nz/resources/392-rocket-aerodynamics
+###############################################################################
+
+
+
 from cmu_graphics import *
 from PIL import Image
 from Classes import Vector, Body, Rocket, Projectile
@@ -33,7 +55,6 @@ def restartSim(app):
     app.zoomedIn = False
     app.zoomCounter = 0
     app.drawTrails = False
-<<<<<<< Updated upstream
     app.G = 1
     app.dt = 0.02
     app.tracerStep = 30
@@ -131,73 +152,6 @@ def image(link, scale): #adapted from provided term project image-demos, demo 1
 
     
 
-=======
-    app.tracerStep = 5
-    app.G = 30
-    
-    app.dt = 0.01
-    
-    app.trailCutoffConstant = 5
-    app.cameraMoveStep = 5
-
-
-    # sunRadius = 10
-    # sunMass = 100000
-    # planet1Radius = 4
-    # planet1Mass = 200
-    # planet2Radius = 3
-    # planet2Mass = 10
-    # planet3Radius = 3
-    # planet3Mass = 15
-    # app.sun1 = body(position=vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=vector(0,0), color='blue')
-    # app.planet1 = body(position=vector(app.width//2,60), radius=planet1Radius, mass=planet1Mass, velocity=vector(15,0), color='red')
-    # app.planet2 = body(position=vector(app.width//2,100), radius=planet2Radius, mass=planet2Mass, velocity=vector(-18,0), color='green')
-    # app.planet3 = body(position=vector(app.width//2,150), radius=planet3Radius, mass=planet3Mass, velocity=vector(25,0), color='orange')
-    # app.rocket = rocket(position=vector(app.width//2, 300), radius=4, mass=10, velocity=vector(0,0),color='pink')
-
-############################## Planet/sun and moon/satelite ####################################
-    # bigObjectRadius = 25
-    # bigObjectMass = 100000
-    # smallObjectRadius = 5
-    # smallObjectMass = 10
-    # app.bigObject = body(position=vector(app.width//2,app.height//2), radius=bigObjectRadius, mass=bigObjectMass, velocity=vector(0,0), color='gold')
-    # app.smallObject = body(position=vector(app.width//2, 80), radius=smallObjectRadius, mass=smallObjectMass, velocity=vector(70,0), color='lightBlue') 
-################################################################################################
-
-############################## Solar System #####################################################
-    # sunRadius = 25
-    # sunMass = 1000000
-    # planet1Radius = 4
-    # planet1Mass = 10
-    # planet2Mass = 50
-    # planet2Radius = 8
-    # planet3Radius = 5
-    # planet3Mass = 5
-    # app.sun = body(position=vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=vector(0,0), color='gold')
-    # app.planet1 = body(position=vector(app.width//2, 275), radius=planet1Radius, mass=planet1Mass, velocity=vector(350,0), color='lightBlue') 
-    # app.planet2 = body(position=vector(app.width//2, 600), radius=planet2Radius, mass=planet2Mass, velocity=vector(200,0), color='lightGreen') 
-    # app.planet3 = body(position=vector(30,app.height//2), radius=planet3Radius, mass=planet3Mass, velocity=vector(0,-165), color='pink') 
-################################################################################################
-
-############################# Binary Stars ########################################################
-# star1Radius = 10
-# star2Radius = 10
-# star1Mass = 100000
-# star2Mass = 100000
-# app.star1 = body(position=vector(400, 200), radius=star1Radius, mass=star1Mass, velocity=vector(74,0), color='red')
-# app.star2 = body(position=vector(400, 400), radius=star2Radius, mass=star2Mass, velocity=vector(-74,0), color='orange')
-###################################################################################################
-
-
-############################ Rocket around planet ########################################
-planetRadius = 30
-planetMass = 100000
-rocketMass = 1
-rocketRadius = 2
-app.planet = body(position=vector(350, 350), radius=planetRadius, mass=planetMass, velocity=vector(0,0), color='teal')
-app.rocket = rocket(position=vector(350, 200), radius=rocketRadius, mass=rocketMass, velocity=vector(100,0), color='grey')
-
->>>>>>> Stashed changes
 def redrawAll(app):
 
 
@@ -385,14 +339,6 @@ def drawTakeoffInstructions(app): #completely identical to the other 2 varients,
         drawRect(app.width//2, 550, 100*scaling, 50, border='white', align='center')
         drawLabel(buttonMessage[:buttonMessageIndex], app.width//2, 550, fill='gold', font='monospace', size=20)
 
-# def redrawSurfaceEngine(app, boxX, boxY): # how we draw the surface engine
-#     LaunchRocket0 = image("LAUNCHROCKET_0.png",scale = 10)
-#     LaunchRocket1 = image("LAUNCHROCKET_1.png",scale = 10)
-#     LaunchRocket2 = image("LAUNCHROCKET_2.png",scale = 10)
-#     # drawLander(app, dx=boxX, dy=boxY, height=50)
-#     angle = app.rocket.angle #* (180 / math.pi)
-#     drawImage(LaunchRocket0, app.rocket.position.x, app.rocket.position.y, align = 'center', rotateAngle = angle)
-
 def drawOrbitInstructions(app):
     drawRect(0, 0, app.width, app.height, fill='black')
     title = 'orbit'
@@ -488,7 +434,7 @@ def redrawLanding(app, boxX, boxY):
     drawImage(LanderList[thrustLevelIndex], app.rocket.position.x-boxX, app.rocket.position.y-boxY, align = 'center', rotateAngle = angle+90)
     # drawRect(app.rocket.position.x-boxX,app.rocket.position.y-boxY,20,20,align='center',rotateAngle=angle)
 
-def drawGameOverScreen(app):
+def drawGameOverScreen(app): #tells you if you won or if you died because you are stupid
     squareWidth = 280
     if 40 > app.step:
         labelIndex = app.step // 5
@@ -515,7 +461,7 @@ def drawGameOverScreen(app):
     deathMessageIndex = getLineIndex(app, 20, 3, app.deathMessage)
     drawLabel(app.deathMessage[:deathMessageIndex], app.width//2, app.height//2+50, fill='white', font='monospace', size=15)
 
-def displayFullscreen(app):
+def displayFullscreen(app): #gives us our info like names, etc
     for cBody in Body.instances:
         if cBody.name != 'rocket':
             if len(cBody.name) * 2 > app.step:
@@ -539,8 +485,8 @@ def displayFullscreen(app):
         drawCircle(app.rocket.position.x, app.rocket.position.y, (cyclePosition//2)+1, border='white',
                 fill=None, opacity=100- cyclePosition*2)
 
-def displayLoadingScreenText(app):
-    if not app.showSettings:
+def displayLoadingScreenText(app):  #draws the first two screens
+    if not app.showSettings: #we heart monospace font
         drawLabel('Voyage', app.width//2, 200, font='monospace', fill='white', size=40)
         drawLabel('By Misho Alexandrov and Sebastian Rodriguez', app.width//2, 250, font='monospace',
                 fill='white', size=15)
@@ -554,9 +500,9 @@ def displayLoadingScreenText(app):
         drawLabel('Stage 3: Landing', app.width//2, 425, fill='white', font='monospace', size=19)
 
 
-def findNearestBody(cBody):
-    nearest = float('inf')
-    best = None
+def findNearestBody(cBody): #it does exactly what the name says it does
+    nearest = float('inf') #I googled how to represent infinity in python, it made more sense then using
+    best = None # a really big number, this source said to do it like this https://flexiple.com/python/python-infinity/
     for entity in Body.instances:
         if entity != cBody:
             currentDistance = distance(cBody.position.x, cBody.position.y,
@@ -566,17 +512,8 @@ def findNearestBody(cBody):
                 best = entity
     return best.name
 
-
-def onMouseDrag(app, mouseX, mouseY):
-    if app.runTakeoffInstructions:
-        if (app.width//2 - 50) <= mouseX <= (app.width//2 + 50):
-            if 500 <= mouseY <= 550:
-                app.takeoffButtonColor = 'white'
-        else:
-            app.takeoffButtonColor = 'grey'
-
-def onMousePress(app, mouseX, mouseY):
-    if not app.gameOver:
+def onMousePress(app, mouseX, mouseY): #since we have many different screens, this provides control flow
+    if not app.gameOver: # to different versions of mousePress which are state dependent
         if not app.showLoadingScreen and app.runOrbit:
             mainGameMousePress(app, mouseX, mouseY)
         else:
@@ -646,14 +583,14 @@ def mainGameMousePress(app, mouseX, mouseY):
         onKeyPress(app, key = 'z')
 
 
-def onKeyPress(app, key):
-    if (not app.showLoadingScreen and not app.gameOver
+def onKeyPress(app, key): # same job as our central mouse press
+    if (not app.showLoadingScreen and not app.gameOver #the many ands are once again, there because of fear
         and not app.runLanding and not app.runTakeoff):
         mainGameKeyPress(app, key)
     elif app.runLanding or app.runTakeoff:
         surfaceEngineKeyPress(app, key)
 
-def surfaceEngineKeyPress(app, key):
+def surfaceEngineKeyPress(app, key): #
     if key == 'down' and app.rocket.burnTime > 0 and app.rocket.thrust > 0:
         app.rocket.thrust -= (Projectile.maxThrust/10)
         if (app.rocket.thrust < 0):
@@ -736,16 +673,6 @@ def rocketKeyHold(app, keys):
     if 'right' in keys:
         app.rocket.angle -= 5
     print(app.rocket.angle)
-    # app.rocket.updateDirection()
-
-    # if 'down' in keys and app.rocket.burnTime > 0 and app.rocket.thrust > 0:
-    #     app.rocket.thrust -= (Projectile.maxThrust/10)
-    #     if (app.rocket.thrust < 0):
-    #         app.rocket.thrust = 0
-    #     if (app.rocket.thrust > Projectile.maxThrust):
-    #         app.rocket.thrust = Projectile.maxThrust
-    # if 'up' in keys and app.rocket.burnTime > 0:
-    #     app.rocket.thrust += (Projectile.maxThrust/10)
 
 def generateProjectedPositions(app, stepDt, steps):
 
@@ -821,7 +748,7 @@ def takeStep(app):
         mainTakeStep(app)
 
 def mainTakeStep(app):
-    if app.zoomedIn and not app.paused:
+    if app.zoomedIn and not app.paused: 
         app.screen[0] = app.rocket.position.x
         app.screen[1] = app.rocket.position.y
     
@@ -917,22 +844,22 @@ def takeStepForSurfaceEngine(app):
     app.rocket.momentum = app.rocket.momentum + (app.rocket.netForceFelt * app.dt)
     app.rocket.velocity = app.rocket.momentum / app.rocket.mass
     deltaPosition = (app.rocket.momentum/app.rocket.mass)*app.dt
-    if app.rocket.altitude <= 0:
-        rocketV = app.rocket.getVelocity()
+    if app.rocket.altitude <= 0: # if we hit the ground
+        rocketV = app.rocket.getVelocity() 
         rocketV *= -1 if deltaPosition.y < 0 else 1
         deltaPosition = Vector(0, 0) if deltaPosition.y < 0 else deltaPosition
-        if app.rocket.getVelocity() <= -100:
+        if app.rocket.getVelocity() <= -100: # make sure it didn't crash and doesn't clip through ground
             app.gameOver = True
             app.step = 1
             chance = random.randint(1, 10)
             if chance == 5:
-                app.deathMessage = "helpful tip: don't crash"
+                app.deathMessage = "helpful tip: don't crash" # 1/10 chance of mean message :(
             else:
                 app.deathMessage = 'Your descent velocity was too high'
             setupGameOver(app)
         app.rocket.momentum = Vector(0, 0) if deltaPosition == Vector(0, 0) else app.rocket.momentum
         app.rocket.velocity = app.rocket.momentum / app.rocket.mass
-        if app.runLanding:
+        if app.runLanding: #check if we won 
             app.win = True
             app.gameOver = True
             app.deathMessage = f'You won with a score of {app.rocket.burnTime*2}'
@@ -941,7 +868,7 @@ def takeStepForSurfaceEngine(app):
     app.rocket.altitude += deltaPosition.y
     if app.rocket.altitude > 3300:
         if app.runTakeoff:
-            if 0 <= abs(app.rocket.angle) <= 45:
+            if 0 <= abs(app.rocket.angle) <= 45: #check for correct exit angle
                 app.step = 1
                 app.fuelLeft = app.rocket.burnTime
                 app.runOrbitInstructions = True
@@ -955,30 +882,13 @@ def takeStepForSurfaceEngine(app):
             app.gameOver = True
             setupGameOver(app)
 
-def onStep(app):
+def onStep(app): 
     app.step += 1
     if not app.paused:
         takeStep(app)
 
 def main():
-<<<<<<< Updated upstream
     app.setMaxShapeCount(10000)
     runApp(width=700, height=700)
-=======
-    runApp(width= 750, height = 750)
-
-main()
-
-
-
-
-    
-    
-
-
-
-
-
->>>>>>> Stashed changes
 
 main()
