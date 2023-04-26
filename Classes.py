@@ -1,7 +1,7 @@
 from cmu_graphics import *
 import math
 
-class Vector:
+class Vector: # magic methods: https://python-course.eu/oop/magic-methods.php
         def __init__(self, x, y):
             self.x = x
             self.y = y
@@ -25,8 +25,8 @@ class Vector:
             newY = self.y * other
             return Vector(newX, newY)
             
-        def __truediv__(self,other): #we wrote it ourselves 
-            newX = self.x / other #source is us
+        def __truediv__(self,other): #learned from: https://blog.finxter.com/python-__truediv__-magic-method/, 
+            newX = self.x / other 
             newY = self.y / other
             return Vector(newX, newY)
         
