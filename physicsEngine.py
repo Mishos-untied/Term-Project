@@ -179,11 +179,14 @@ def redrawAll(app):
         app.screen[0] = app.rocket.position.x
         boxX = app.screen[0] - app.screen[2] // 2
         boxY = app.screen[1] - app.screen[3]//2
-        groundColor = 'darkOliveGreen' if app.runTakeoff else 'brown'
+        groundColor = 'darkOliveGreen' if app.runTakeoff else 'saddleBrown'
         drawRect((-app.width-boxX)*5,app.height-boxY-20,app.width*15,app.height*20,fill=groundColor)
-
-        drawRect((-app.width-boxX)*5, app.height-boxY-(app.height*8-680), app.width*10, app.height*7, fill=gradient('lightBlue', 'blue',
-                                                                                        'midnightblue', 'darkBlue', 'black', start='bottom'))
+        if app.runTakeoff:
+            drawRect((-app.width-boxX)*5, app.height-boxY-(app.height*8-680), app.width*10, app.height*7, fill=gradient('lightBlue', 'blue',
+                                                                                            'midnightblue', 'darkBlue', 'black', start='bottom'))
+        if app.runLanding:
+            drawRect((-app.width-boxX)*5, app.height-boxY-(app.height*8-680), app.width*10, app.height*7, fill=gradient('cornSilk', 'wheat','tan',rgb(150,120,80),
+                                                                                        'black', 'black', 'black', start='bottom'))
         labelColor = 'white' if app.rocket.altitude > 1000 else 'black'
         drawLabel(f'Altitude: {rounded(app.rocket.altitude)} meters', 80, 40, fill=labelColor, font='monospace')
         rocketVelocity = int(app.rocket.getVelocity())
