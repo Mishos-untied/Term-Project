@@ -440,8 +440,6 @@ def loadingScreenMousePress(app, mouseX, mouseY):
                     app.runLanding = True
                     onSurfaceEngineStart(app)
 
-    
-                
        
 def mainGameMousePress(app, mouseX, mouseY):
     if 50 <= mouseX <= app.width - 50:
