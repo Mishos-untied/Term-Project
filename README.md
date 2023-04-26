@@ -1,2 +1,2 @@
 # Term-Project
-rocket go up high
+For our project we developed the simulator 'Voyage'. It comprises 3 stages, takeoff, orbit, and landing, with particular focus being placed on the orbit stage. The takeoff and landing stages run on the same physics engine, while the orbital version uses a different one; both are designed to be realistic and utilize differential equations to generate accurate models of physical systems. Key features include projections, a camera that can zoom in multiple times and track the rocket, and realistic n-body physics. All drawings were made in CMU graphics, but we did have to take screenshots of some of the drawings and rotate those due to computational limitations.
