@@ -1,6 +1,3 @@
-#Current lines: 928, target: 1000
-
-
 ##### Physics Research Citations ##############################################
 # https://en.wikipedia.org/wiki/Orbital_mechanics
 # https://en.wikipedia.org/wiki/Celestial_mechanics
@@ -675,7 +672,6 @@ def rocketKeyHold(app, keys):
         app.rocket.angle += 5
     if 'right' in keys:
         app.rocket.angle -= 5
-    print(app.rocket.angle)
 
 def generateProjectedPositions(app, stepDt, steps):
 
