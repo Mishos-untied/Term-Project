@@ -21,18 +21,14 @@ class Vector:
             return Vector(newX, newY)
         
         def __mul__(self, other):
-            if not (isinstance(other, float) or isinstance(other, int)):
-                raise TypeError('Can only multiply a vector with a scalar')
-            elif (isinstance(other, float) or isinstance(other,int)):
-                newX = self.x * other
-                newY = self.y * other
-                return Vector(newX, newY)
+            newX = self.x * other
+            newY = self.y * other
+            return Vector(newX, newY)
             
-        def __truediv__(self,other):
-            if not (isinstance(other, float) or isinstance(other, int)):
-                raise TypeError('Can only divide a vector with a scalar')
-            elif (isinstance(other, float) or isinstance(other,int)):
-                return (self * (1 / other))
+        def __truediv__(self,other): #we wrote it ourselves 
+            newX = self.x / other #source is us
+            newY = self.y / other
+            return Vector(newX, newY)
         
         def roundVector(self, decimalPlaces):
             x = pythonRound(self.x,decimalPlaces)
@@ -59,8 +55,9 @@ class Body:
             if name != None:
                 self.name = name
             else:
-                self.name = str(Body.instances.index(self))
-        
+                self.name = str(Body.instances.index(self)) #give it a unique identifier for hashing
+         #sadly we never implemented hashing for this as it was not necessary
+         # these two survived because it was useful to have them for our display
         def __eq__(self, other):
             return isinstance(other, Body) and self.name == other.name
         
@@ -92,7 +89,7 @@ class Projectile:
 
 
 class Rocket(Body):
-    maxThrust = 5e-16
+    maxThrust = 1e-17
     def __init__(self, position, radius, mass, velocity, color, angle=0, name=None, burnTime=30000):
         self.rocketAngle = angle
         super().__init__(position, radius, mass, velocity, color, name)
@@ -121,8 +118,4 @@ class Rocket(Body):
         self.directionVector = Vector(math.cos(self.angle), math.sin(self.angle)) 
     
     def getVelocityMagnitude(self):
-        return (self.velocity.x ** 2 + self.velocity.y ** 2) ** 0.5
-    
-        
-
-    
+        return (self.velocity.x**2 + self.velocity.y**2)**0.5
