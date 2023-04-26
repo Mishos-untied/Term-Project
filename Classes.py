@@ -68,6 +68,7 @@ class Body:
             self.velocity = self.momentum / self.mass
 
 class Projectile:
+    maxThrust = 200
     def __init__(self, position, mass, angle, Cd, crossSectionalArea, velocity, thrust, altitude, burnTime=30000):
         self.position = position
         self.mass = mass 
@@ -91,7 +92,7 @@ class Projectile:
 
 
 class Rocket(Body):
-    maxThrust = 200
+    maxThrust = 5e-16
     def __init__(self, position, radius, mass, velocity, color, angle=0, name=None, burnTime=30000):
         self.rocketAngle = angle
         super().__init__(position, radius, mass, velocity, color, name)
