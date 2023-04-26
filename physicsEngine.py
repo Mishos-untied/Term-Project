@@ -33,6 +33,7 @@ def restartSim(app):
     app.zoomedIn = False
     app.zoomCounter = 0
     app.drawTrails = False
+<<<<<<< Updated upstream
     app.G = 1
     app.dt = 0.02
     app.tracerStep = 30
@@ -130,6 +131,73 @@ def image(link, scale): #adapted from provided term project image-demos, demo 1
 
     
 
+=======
+    app.tracerStep = 5
+    app.G = 30
+    
+    app.dt = 0.01
+    
+    app.trailCutoffConstant = 5
+    app.cameraMoveStep = 5
+
+
+    # sunRadius = 10
+    # sunMass = 100000
+    # planet1Radius = 4
+    # planet1Mass = 200
+    # planet2Radius = 3
+    # planet2Mass = 10
+    # planet3Radius = 3
+    # planet3Mass = 15
+    # app.sun1 = body(position=vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=vector(0,0), color='blue')
+    # app.planet1 = body(position=vector(app.width//2,60), radius=planet1Radius, mass=planet1Mass, velocity=vector(15,0), color='red')
+    # app.planet2 = body(position=vector(app.width//2,100), radius=planet2Radius, mass=planet2Mass, velocity=vector(-18,0), color='green')
+    # app.planet3 = body(position=vector(app.width//2,150), radius=planet3Radius, mass=planet3Mass, velocity=vector(25,0), color='orange')
+    # app.rocket = rocket(position=vector(app.width//2, 300), radius=4, mass=10, velocity=vector(0,0),color='pink')
+
+############################## Planet/sun and moon/satelite ####################################
+    # bigObjectRadius = 25
+    # bigObjectMass = 100000
+    # smallObjectRadius = 5
+    # smallObjectMass = 10
+    # app.bigObject = body(position=vector(app.width//2,app.height//2), radius=bigObjectRadius, mass=bigObjectMass, velocity=vector(0,0), color='gold')
+    # app.smallObject = body(position=vector(app.width//2, 80), radius=smallObjectRadius, mass=smallObjectMass, velocity=vector(70,0), color='lightBlue') 
+################################################################################################
+
+############################## Solar System #####################################################
+    # sunRadius = 25
+    # sunMass = 1000000
+    # planet1Radius = 4
+    # planet1Mass = 10
+    # planet2Mass = 50
+    # planet2Radius = 8
+    # planet3Radius = 5
+    # planet3Mass = 5
+    # app.sun = body(position=vector(app.width//2,app.height//2), radius=sunRadius, mass=sunMass, velocity=vector(0,0), color='gold')
+    # app.planet1 = body(position=vector(app.width//2, 275), radius=planet1Radius, mass=planet1Mass, velocity=vector(350,0), color='lightBlue') 
+    # app.planet2 = body(position=vector(app.width//2, 600), radius=planet2Radius, mass=planet2Mass, velocity=vector(200,0), color='lightGreen') 
+    # app.planet3 = body(position=vector(30,app.height//2), radius=planet3Radius, mass=planet3Mass, velocity=vector(0,-165), color='pink') 
+################################################################################################
+
+############################# Binary Stars ########################################################
+# star1Radius = 10
+# star2Radius = 10
+# star1Mass = 100000
+# star2Mass = 100000
+# app.star1 = body(position=vector(400, 200), radius=star1Radius, mass=star1Mass, velocity=vector(74,0), color='red')
+# app.star2 = body(position=vector(400, 400), radius=star2Radius, mass=star2Mass, velocity=vector(-74,0), color='orange')
+###################################################################################################
+
+
+############################ Rocket around planet ########################################
+planetRadius = 30
+planetMass = 100000
+rocketMass = 1
+rocketRadius = 2
+app.planet = body(position=vector(350, 350), radius=planetRadius, mass=planetMass, velocity=vector(0,0), color='teal')
+app.rocket = rocket(position=vector(350, 200), radius=rocketRadius, mass=rocketMass, velocity=vector(100,0), color='grey')
+
+>>>>>>> Stashed changes
 def redrawAll(app):
 
 
@@ -893,7 +961,24 @@ def onStep(app):
         takeStep(app)
 
 def main():
+<<<<<<< Updated upstream
     app.setMaxShapeCount(10000)
     runApp(width=700, height=700)
+=======
+    runApp(width= 750, height = 750)
+
+main()
+
+
+
+
+    
+    
+
+
+
+
+
+>>>>>>> Stashed changes
 
 main()
