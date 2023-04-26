@@ -1,7 +1,7 @@
 from cmu_graphics import *
 import math
 
-class Vector: # magic methods: https://python-course.eu/oop/magic-methods.php
+class Vector: # magic methods reference: https://python-course.eu/oop/magic-methods.php
         def __init__(self, x, y):
             self.x = x
             self.y = y
